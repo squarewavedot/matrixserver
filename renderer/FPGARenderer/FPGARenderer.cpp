@@ -56,9 +56,12 @@ void FPGARenderer::init(std::vector<std::shared_ptr<Screen>> initScreens) {
 }
 
 void FPGARenderer::setScreenData(int screenId, Color *screenData) {
+    if(!renderMutex.try_lock())
+        return;
     if (screenId < screens.size()) {
         screens.at(screenId)->setScreenData(screenData);
     }
+    renderMutex.unlock();
 }
 
 void FPGARenderer::render() {
@@ -66,7 +69,7 @@ void FPGARenderer::render() {
         return;
     //Color tempPixelColor;
 
-    int llen = 64*3;
+    int llen = 64*3*6;
     int flen = 64*llen;
     uint8_t *buf = (uint8_t*)malloc(flen);
 
@@ -88,7 +91,10 @@ void FPGARenderer::render() {
 
         /* SPI payload */
         cmd_buf[i++] = 0x80;
-        memcpy(cmd_buf+i, &((uint8_t *)screens[0]->getScreenData().data())[y*llen], llen);
+//        for(screenCounter)
+        for(auto screen : screens) {
+            memcpy(cmd_buf + i + screen->getOffsetX()*(llen/6), &((uint8_t *) screen->getScreenData().data())[y * (llen/6)], llen/6);
+        }
         i += llen;
 
         /* Set CS high */
@@ -126,14 +132,14 @@ void FPGARenderer::render() {
     set_cs(1);
 
     /* VSync */
-#if 0
+#if 1
     do {
         cmd_buf[0] = 0x00;
         cmd_buf[1] = 0x00;
         set_cs(0);
         mpsse_xfer_spi(cmd_buf, 2);
         set_cs(1);
-        //printf("%d\n", cmd_buf[0] | cmd_buf[1]);
+//        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
     } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 #endif
 
