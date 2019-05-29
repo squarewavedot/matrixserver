@@ -1,0 +1,17 @@
+EXPORTS
+    Cleanup_libMPSSE @1
+    FT_ReadGPIO @2
+    FT_WriteGPIO @3
+    Infra_TestFunction@8 @4
+    Init_libMPSSE @5
+    SPI_ChangeCS @6
+    SPI_CloseChannel @7
+    SPI_GetChannelInfo @8
+    SPI_GetNumChannels @9
+    SPI_InitChannel @10
+    SPI_IsBusy @11
+    SPI_OpenChannel @12
+    SPI_Read @13
+    SPI_ReadWrite @14
+    SPI_ToggleCS @15
+    SPI_Write @16

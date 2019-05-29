@@ -1,0 +1,15 @@
+make clean
+make
+cp -f libMPSSE.so /usr/lib
+
+gcc test.c -ldl -g
+./a.out
+
+#cd ../../../Test
+#make clean
+#make
+#cp test ../LibMPSSE/Build/Linux
+#cd ../LibMPSSE/Build/Linux
+#test
+
+

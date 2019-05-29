@@ -1,0 +1,26 @@
+#build directory
+cmake-build-debug/*
+!cmake-build-debug/.keep
+cmake-build-release/*
+!cmake-build-release/.keep
+build/*
+
+#CMake
+
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+#OSX
+.DS_Store
+
+# Building
+reports/*
+output/*
+.idea/*

@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package matrixserver;
+
+// This is the mainmessage, all other messagedefinitions are submessages of this one
+message MatrixServerMessage {
+    MessageType messageType = 1;
+    int32 appID = 2;
+    Status status = 3;
+    repeated ScreenData screenData = 4;
+    repeated JoystickData joystickData = 5;
+    ImuData imuData = 6;
+    ServerConfig serverConfig = 10;
+}
+
+enum MessageType {
+    defaultMessageType = 0;
+    registerApp = 1;
+    getServerInfo = 2;
+    requestScreenAccess = 3;
+    setScreenFrame = 4;
+    appAlive = 5;
+    appPause = 6;
+    appResume = 7;
+    appKill = 8;
+    imuData = 9;
+    joystickData = 10;
+}
+
+enum Status{
+    defaultStatus = 0;
+    error = 1;
+    success = 2;
+    invalidRequest = 3;
+    requestDenied = 4;
+}
+
+message ScreenData {
+    int32 screenID = 1;
+    bytes frameData = 2;
+    Encoding encoding = 6;
+    enum Encoding{
+        default = 0;
+        rgb24bbp = 1;
+    }
+}
+
+message ImuData{
+    float accelX = 1;
+    float accelY = 2;
+    float accelZ = 3;
+    float gyroX = 4;
+    float gyroY = 5;
+    float gyroZ = 6;
+}
+
+message JoystickData {
+    int32 joystickID = 1;
+    float axisX = 2;
+    float axisY = 3;
+    bool buttonA = 4;
+    bool buttonB = 5;
+    bool buttonX = 6;
+    bool buttonY = 7;
+    bool buttonR = 8;
+    bool buttonL = 9;
+    bool buttonStart = 10;
+    bool buttonSelect = 11;
+    float rightAxisX = 12;
+    float rightAxisY = 13;
+    float rightTrigger = 14;
+    float leftTrigger  = 15;
+    bool rightStickButton = 16;
+    bool leftStickButton = 17;
+    bool buttonDpadUp = 18;
+    bool buttonDpadLeft = 19;
+    bool buttonDpadDown = 20;
+    bool buttonDpadRight = 21;
+}
+
+message ServerConfig {
+    repeated ScreenInfo screenInfo = 1;
+    enum AssemblyType {
+        defaultAssemblyType = 0;
+        flat = 1;
+        cube = 2;
+    }
+    AssemblyType assemblyType = 2;
+    int32 globalScreenBrightness = 3;
+    Connection serverConnection = 4;
+    string serverName = 5;
+}
+
+message Connection {
+    string serverAddress = 1;
+    string serverPort = 2;
+    ConnectionType connectionType = 3;
+    enum ConnectionType {
+        defaultConnectionType = 0;
+        tcp = 1;
+        udp = 2;
+    }
+}
+
+message ScreenInfo {
+    int32 screenID = 1;
+    int32 width = 2;
+    int32 height = 3;
+    bool available = 4;
+    enum ScreenOrientation {
+        defaultScreenOrientation = 0;
+        front = 1;
+        right = 2;
+        back = 3;
+        left = 4;
+        top = 5;
+        bottom = 6;
+        anyScreen = 10;
+    }
+    ScreenOrientation screenOrientation = 5;
+    enum ScreenRotation {
+        rot0 = 0;
+        rot90 = 1;
+        rot180 = 2;
+        rot270 = 3;
+    }
+    ScreenRotation screenRotation = 6;
+    int32 offsetX = 7;
+    int32 offsetY = 8;
+}

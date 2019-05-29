@@ -1,0 +1,31 @@
+;Copyright © 2000-2014 Future Technology Devices International Limited
+; 
+; 
+; THIS SOFTWARE IS PROVIDED BY FUTURE TECHNOLOGY DEVICES INTERNATIONAL LIMITED ``AS IS'' AND ANY EXPRESS 
+; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+; FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL FUTURE TECHNOLOGY DEVICES INTERNATIONAL LIMITED
+; BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+; BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+; THE POSSIBILITY OF SUCH DAMAGE.
+;
+
+Following are the steps needed to build the DLL on Windows:
+
+1) Install MinGW (GCC) Compiler Suite on Windows. The tested version is GCC 4.5.0
+
+2) Unzip the file ...\External\Windows\CDM20812.zip in the folder ...\External\Windows\CDM20812
+Note that the latest version of D2XX driver is available at http://www.ftdichip.com/Drivers/D2XX.htm
+If the latest version of the D2XX driver is used then the entry for EXTERNAL_INC_DIR in ...\LibMPSSE\Build\Windows will need to be changed accordingly.
+
+3) In folder ...\LibMPSSE\Build\Windows run mingw32-make
+This will build the file libMPSSE.dll
+
+Note that to disable the debug prints from the DLL, the following lines needs to be commented
+MACROS = -DINFRA_DEBUG_ENABLE
+and the following line needs to be uncommented 
+#MACROS = 
+
+
+Also note that the ...\LibMPSSE\Build\Windows\b.bat script builds the DLL and a test application, and then runs it.

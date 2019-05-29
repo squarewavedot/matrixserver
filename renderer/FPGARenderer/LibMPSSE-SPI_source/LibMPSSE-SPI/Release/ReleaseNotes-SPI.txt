@@ -1,0 +1,99 @@
+                                  LibMPSSE-SPI
+                                  Release Notes
+                                  Version 0.41
+                                  03-Sep-2014
+
+
+	     Copyright (c) 2000-2014 FTDI, Inc. All rights reserved.
+
+
+
+CONTENTS
+========
+  1.  Overview
+
+  2.  Installation Procedure 
+  
+  3.  Known Limitations
+  
+  4.  Test Environment
+
+  5.  Change log
+
+
+1. Overview
+===========
+The library is compiled using GCC version 4.5. The files that have been provided with this release are:
+
+1.1) AN_178_User Guide for LibMPSSE-SPI.pdf - The user manual for libMPSSE-SPI
+1.2) Release_Notes.txt - This file
+1.3) include/libMPSSE_spi.h - The header file for libMPSSE-SPI
+1.4) include/windows/ftd2xx.h - The header file for D2XX windows driver
+1.5) include/linux/ftd2xx.h - The header file for D2XX linux driver
+1.6) include/linux/WinTypes.h - Header file required required by ftd2xx.h
+1.7) lib/windows/i386/libMPSSE.a - libMPSSE static library for windows
+1.8) lib/windows/i386/libMPSSE.dll - libMPSSE dynamic library for windows
+1.9) lib/linux/i386/libMPSSE.a - libMPSSE static library for 32bit linux
+1.10) lib/linux/i386/libMPSSE.so - libMPSSE dynamic library for 32bit linux
+1.11) lib/linux/x86_64/libMPSSE.a - libMPSSE static library for 64bit linux
+1.12) lib/linux/x86_64/libMPSSE.so - libMPSSE dynamic library for 64bit linux
+1.13) SPI/sample-dynamic.c - Sample code showing the use of libMPSSE as a dynamic library for SPI
+1.14) SPI/sample-static.c - Sample code showing the use of libMPSSE as a static library for SPI
+1.15) b.bat - A batch file for windows that builds the samples and executes them
+1.16) b.bash - A shell script for linux that builds the samples and executes them(requires to be executed from bash shell using root)
+
+2. Installation Procedure
+=========================
+The D2XX driver(http://www.ftdichip.com/Drivers/D2XX.htm) should be 
+installed for libMPSSE to work. 
+
+For linux, the drivers ftdi_sio and usbserial should be removed 
+before the D2XX drivers can be used. The library has to be installed at 
+/usr/lib (or /usr/lib64) before the application tries to use it.
+
+3. Known Limitations
+====================
+1) The APIs I2C_GetNumChannels, I2C_GetChannelInfo and I2C_OpenChannel does not 
+work when they are called simultaneously from multiple applications at the same time.
+2) LatencyTimer should be greater than 0 for FT232H
+
+4. Test Environment
+==================
+The library has been tested and known to work on a "HP Compaq DX 2710 SF" 
+running "Fedora 14" distribution with linux kernel 2.6.38. The hardware 
+that has been tested consists of a FT2232H-Mini-Module connected 
+to a 93LC56B EEPROM chip. 
+
+5. Change log
+================================
+12 December 2011
+----------------
+1) Added new function SPI_ReadWrite that clocks data in and out simultaneously
+2) Added functionality to Read/Write multiple bytes per USB frame when SPI_TRANSFER_OPTION_SIZE_IN_BYTES bit is set in transferOptions
+3) Added 64bit linux support
+4) Adapted to new release folder structure - unified sample code for windows & linux
+5) Updated build scripts
+6) Bug Fixed: sizeTransferred used to always return 0 if bit SPI_TRANSFER_OPTION_SIZE_IN_BYTES was set
+
+08 July 2011
+------------
+1) Added functions Init_libMPSSE and Cleanup_libMPSSE
+2) Added functions FT_ReadGPIO & FT_WriteGPIO
+3) Added 3-phase clocking functionality. This functionality is enabled by default.
+
+20 May 2011
+-----------
+1) Change in APIs I2C_GetChannelInfo & I2C_OpenChannel to start indexing channels from 0
+2) Solved bug: I2C_GetNumChannels reports only one available channel when FT2232H chip is conected
+3) Exported library infrastructure functions for initializing library when used with VC++ in static mode
+
+20 May 2014
+-----------
+1) Solved bug: Memory leakage in SPI mode
+2) Soved bug: MSVC version 2010 release mode compilation failure
+
+03 Sep 2014
+-----------
+1) Fix Release Package compilation errors and warnings on Linux and Windows
+2) Include 64-bit libraries for 64-bit Windows Visual Studio applications
+3) Include 32-bit library (.lib) for Visual Studio Debug and Release mode applications
