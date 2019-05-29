@@ -1,13 +1,44 @@
 #include "FPGARenderer.h"
 
-#include "libMPSSE_spi.h"
+#include <cstring>
 
-#define SPI_DEVICE_BUFFER_SIZE 256
+extern "C" {
+    #include "mpsse/mpsse.h"
+}
+//#include <bcm2835.h>
+//#include <wiringPiSPI.h>
 
-uint32 channels;
-FT_HANDLE ftHandle;
-ChannelConfig channelConf;
-uint8 buffer[SPI_DEVICE_BUFFER_SIZE];
+//#include "libMPSSE_spi.h"
+//
+//#define SPI_DEVICE_BUFFER_SIZE 256
+//
+//uint32 channels;
+//FT_HANDLE ftHandle;
+//ChannelConfig channelConf;
+//uint8 buffer[SPI_DEVICE_BUFFER_SIZE];
+
+
+// ---------------------------------------------------------
+// icebreaker specific gpio functions
+// ---------------------------------------------------------
+
+static void set_cs(int cs_b)
+{
+    uint8_t gpio = 0;
+    uint8_t direction = 0x2b;
+
+    /*
+     * XXX
+     * The chip select here is the dedicated SPI chip select.
+     * I am not sure how it is being toggled by hand yet.
+     * Not sure this will work.
+     */
+    if (cs_b) {
+        gpio |= 0x28;
+    }
+
+    mpsse_set_gpio(gpio, direction);
+}
 
 FPGARenderer::FPGARenderer() {
 
@@ -20,36 +51,8 @@ FPGARenderer::FPGARenderer(std::vector<std::shared_ptr<Screen>> initScreens) {
 void FPGARenderer::init(std::vector<std::shared_ptr<Screen>> initScreens) {
     screens = initScreens;
 
-    FT_STATUS status;
-    FT_DEVICE_LIST_INFO_NODE devList;
-    uint8 address=0;
-    uint16 data;
-    int i,j;
-    channelConf.ClockRate = 30000000;
-    channelConf.LatencyTimer= 255;
-    channelConf.configOptions = SPI_CONFIG_OPTION_MODE0 | SPI_CONFIG_OPTION_CS_DBUS3;
-    channelConf.Pin = 0x00000000;/*FinalVal-FinalDir-InitVal-InitDir (for dir 0=in, 1=out)*/
-    status = SPI_GetNumChannels(&channels);
-    printf("Number of available SPI channels = %d\n",channels);
-    if(channels>0)
-    {
-        for(i=0;i<channels;i++)
-        {
-            status = SPI_GetChannelInfo(i,&devList);
-            printf("Information on channel number %d:\n",i);
-            printf("Flags=0x%x\n",devList.Flags);
-            printf("Type=0x%x\n",devList.Type);
-            printf("ID=0x%x\n",devList.ID);
-            printf("LocId=0x%x\n",devList.LocId);
-            printf("SerialNumber=%s\n",devList.SerialNumber);
-            printf("Description=%s\n",devList.Description);
-            printf("ftHandle=0x%x\n",devList.ftHandle);/*is 0 unless open*/
-        }
-        status = SPI_OpenChannel(0,&ftHandle);
-        printf("\nhandle=0x%x status=0x%x\n",ftHandle,status);
-        status = SPI_InitChannel(ftHandle,&channelConf);
-        status = SPI_CloseChannel(ftHandle);
-    }
+    std::cout << "Init SPI Driver" << std::endl;
+    mpsse_init(0, NULL, false);
 }
 
 void FPGARenderer::setScreenData(int screenId, Color *screenData) {
@@ -61,7 +64,80 @@ void FPGARenderer::setScreenData(int screenId, Color *screenData) {
 void FPGARenderer::render() {
     if(!renderMutex.try_lock())
         return;
-    Color tempPixelColor;
+    //Color tempPixelColor;
+
+    int llen = 64*3;
+    int flen = 64*llen;
+    uint8_t *buf = (uint8_t*)malloc(flen);
+
+    uint8_t *cmd_buf = (uint8_t*)malloc(llen+128);
+    /* Upload all the lines */
+    for (int y=0; y<64; y++)
+    {
+        int i=0;
+
+        /* Set CS low */
+        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
+        cmd_buf[i++] = 0x00; /* gpio */
+        cmd_buf[i++] = 0x2b; /* dir  */
+
+        /* SPI packet header */
+        cmd_buf[i++] = 0x11; /* MC_DATA_OUT | MC_DATA_OCN */
+        cmd_buf[i++] = (llen+1-1) & 0xff;
+        cmd_buf[i++] = (llen+1-1) >> 8;
+
+        /* SPI payload */
+        cmd_buf[i++] = 0x80;
+        memcpy(cmd_buf+i, &((uint8_t *)screens[0]->getScreenData().data())[y*llen], llen);
+        i += llen;
+
+        /* Set CS high */
+        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
+        cmd_buf[i++] = 0x28; /* gpio */
+        cmd_buf[i++] = 0x2b; /* dir  */
+
+        /* Set CS low */
+        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
+        cmd_buf[i++] = 0x00; /* gpio */
+        cmd_buf[i++] = 0x2b; /* dir  */
+
+        /* SPI header */
+        cmd_buf[i++] = 0x11; /* MC_DATA_OUT | MC_DATA_OCN */
+        cmd_buf[i++] = 2-1;
+        cmd_buf[i++] = 0;
+
+        /* SPI payload */
+        cmd_buf[i++] = 0x03;
+        cmd_buf[i++] = y;
+
+        /* Set CS high */
+        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
+        cmd_buf[i++] = 0x28; /* gpio */
+        cmd_buf[i++] = 0x2b; /* dir  */
+
+        mpsse_send_raw(cmd_buf, i);
+    }
+
+    /* Swap Frame */
+    cmd_buf[0] = 0x04;
+    cmd_buf[1] = 0x00;
+    set_cs(0);
+    mpsse_send_spi(cmd_buf, 2);
+    set_cs(1);
+
+    /* VSync */
+#if 0
+    do {
+        cmd_buf[0] = 0x00;
+        cmd_buf[1] = 0x00;
+        set_cs(0);
+        mpsse_xfer_spi(cmd_buf, 2);
+        set_cs(1);
+        //printf("%d\n", cmd_buf[0] | cmd_buf[1]);
+    } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
+#endif
+
+
 //    auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
     for (auto screen : screens) {
        /* auto ScreenData = screen->getScreenData();
