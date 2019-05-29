@@ -21,8 +21,10 @@ TODO
 ## The Project is divided into multiple modules:
 
 * common
-        * protobuf message definition for communication
+
+	* protobuf message definition for communication
         * multiple communication classes
+	
                 * IPC (boost message queue, currently the most efficent local communication)
                 * UnixSocket
                 * TCPSocket (remote communication possible)
