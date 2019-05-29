@@ -9,12 +9,10 @@ on raspbian and ubuntu:
 
 # Building
 
-make sure you have cloned with submodules `git clone --recursive`
+make sure you have cloned with submodules `git clone --recursive`  
 tested on ubuntu, raspbian & macOS
 
-`cd build`
-`cmake ..`
-`make`
+`cd build && cmake .. && make`
 
 # Quickstart
 
@@ -34,7 +32,7 @@ TODO
 	* different renderers for interface with physical or virual displays
 	* currently implemented:
 		* RGBMatrixRenderer: hardwareinterface via hzeller rpi-rgb-matrix library
-		* SimulatorRendere: softwareinterface for the CubeSimulator project (see x)
+		* SimulatorRenderer: softwareinterface for the CubeSimulator project (see [https://github.com/squarewavedot/CubeSimulator])
 		* FPGARenderer: currently not implemented, meant to be the new hardwareinterface to LED Panels
 * server & application
 	* server logic
