@@ -48,6 +48,10 @@ void Screen::setPixel(int x, int y, Color col) {
     screenData[getArrayIndex(x, y)] = col;
 }
 
+Color Screen::getPixel(int x, int y){
+    return screenData[getArrayIndex(x, y)];
+}
+
 void Screen::clear() {
     fill(Color::black());
 }

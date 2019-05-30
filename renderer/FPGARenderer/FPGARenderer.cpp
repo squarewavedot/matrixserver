@@ -91,9 +91,31 @@ void FPGARenderer::render() {
 
         /* SPI payload */
         cmd_buf[i++] = 0x80;
-//        for(screenCounter)
+
+        Color tmpColor;
         for(auto screen : screens) {
-            memcpy(cmd_buf + i + screen->getOffsetX()*(llen/6), &((uint8_t *) screen->getScreenData().data())[y * (llen/6)], llen/6);
+            for(int x = 0; x < screen->getWidth(); x++) {
+                switch (screen->getRotation()) {
+                    case Rotation::rot0:
+                            tmpColor = screen->getPixel(x, y);
+                        break;
+                    case Rotation::rot90:
+                            tmpColor = screen->getPixel(screen->getHeight()-1-y, x);
+                        break;
+                    case Rotation::rot180:
+                            tmpColor = screen->getPixel(screen->getWidth()-1-x, screen->getHeight()-1-y);
+                        break;
+                    case Rotation::rot270:
+                            tmpColor = screen->getPixel(y, screen->getWidth()-1-x);
+                        break;
+                    default:
+                        break;
+                }
+                cmd_buf[i + screen->getOffsetX() * (llen / 6) + x * 3] = tmpColor.r();
+                cmd_buf[i + screen->getOffsetX() * (llen / 6) + x * 3 + 1] = tmpColor.g();
+                cmd_buf[i + screen->getOffsetX() * (llen / 6) + x * 3 + 2] = tmpColor.b();
+            }
+//            memcpy(cmd_buf + i + screen->getOffsetX()*(llen/6), &((uint8_t *) screen->getScreenData().data())[y * (llen/6)], llen/6);
         }
         i += llen;
 

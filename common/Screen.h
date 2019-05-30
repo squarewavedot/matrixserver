@@ -19,6 +19,8 @@ public:
 
     int getHeight();
 
+    Color getPixel(int x, int y);
+
     void setPixel(int x, int y, uint8_t red, uint8_t green, uint8_t blue);
 
     void setPixel(int x, int y, Color col);
