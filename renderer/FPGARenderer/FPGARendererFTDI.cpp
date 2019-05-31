@@ -119,7 +119,7 @@ void FPGARendererFTDI::render() {
                 }
                 if(bitDepthInBytes == 2){
                     uint16_t *pixelP = (uint16_t *)(cmd_buf + i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes);
-                    *pixelP = (tmpColor.r() | tmpColor.g()<<6 | tmpColor.b()<<11) & 0xFFFF;
+                    *pixelP = tmpColor.r() >> 3 << 11 | tmpColor.g() >> 2 << 6 | tmpColor.b() >> 3;
                 }else if(bitDepthInBytes == 3){
                     cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes] = tmpColor.r();
                     cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes + 1] = tmpColor.g();
