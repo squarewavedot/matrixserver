@@ -82,7 +82,7 @@ void FPGARendererRPISPI::init(std::vector<std::shared_ptr<Screen>> initScreens) 
 
     std::cout << "Init SPI Driver" << std::endl;
     gpioInitialise();
-    uint32_t spiSpeed = 3000000;
+    uint32_t spiSpeed = 30000000;
     uint32_t spiFlags = 0x40 & 0x3FFFFF; //http://abyz.me.uk/rpi/pigpio/cif.html#spiOpen
     spidevfilehandle = spiOpen(0,spiSpeed,spiFlags);
 //
@@ -212,7 +212,7 @@ void FPGARendererRPISPI::render() {
                         break;
                     case Rotation::rot180:
 //                        tmpColor = screen->getPixel(screenWidth-1-x, screenHeight-1-y);
-                        tmpColor = screenData[screenWidth-1-x + (screenHeight-1-y) * screenHeight];
+                        tmpColor = screenData[screenWidth-1-y + (screenHeight-1-x) * screenHeight];
                         break;
                     case Rotation::rot270:
 //                        tmpColor = screen->getPixel(y, screenWidth-1-x);
@@ -223,7 +223,8 @@ void FPGARendererRPISPI::render() {
                 }
                 //bitDepthInBytes == 2
                 pixelP = (uint16_t *)(cmd_buf + i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes);
-                *pixelP = (tmpColor.r() | tmpColor.g()<<6 | tmpColor.b()<<11);
+//                *pixelP = (tmpColor.r() | tmpColor.g()<<6 | tmpColor.b()<<11);
+                *pixelP = tmpColor.r() >> 3 << 11 | tmpColor.g() >> 2 << 6 | tmpColor.b() >> 3;
                 //bitDepthInBytes == 3
 //                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes] = tmpColor.r();
 //                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes + 1] = tmpColor.g();
@@ -234,13 +235,13 @@ void FPGARendererRPISPI::render() {
         }
         i += llen;
 
-//        spiWrite(spidevfilehandle, cmd_buf, i);
+        spiWrite(spidevfilehandle, cmd_buf, i);
 //        SpiWriteRead(fd, cmd_buf, i);
 
         cmd_buf[0] = 0x03;
         cmd_buf[1] = y;
 
-//        spiWrite(spidevfilehandle, cmd_buf, 2);
+        spiWrite(spidevfilehandle, cmd_buf, 2);
 //        SpiWriteRead(fd, cmd_buf, 2);
     }
 
@@ -248,7 +249,7 @@ void FPGARendererRPISPI::render() {
     cmd_buf[0] = 0x04;
     cmd_buf[1] = 0x00;
 
-//    spiWrite(spidevfilehandle, cmd_buf, 2);
+    spiWrite(spidevfilehandle, cmd_buf, 2);
 //    SpiWriteRead(fd, cmd_buf, 2);
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
