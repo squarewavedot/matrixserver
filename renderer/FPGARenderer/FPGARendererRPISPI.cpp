@@ -17,14 +17,7 @@ int ret, fd;
 int screenWidth, screenHeight, bitDepthInBytes, screenCount, llen;
 char *cmd_buf;
 
-int SpiWriteRead (int fd, unsigned char *data, int length)
-/* Schreiben und Lesen auf SPI. Parameter:
- * fd        Devicehandle
- * data      Puffer mit Sendedaten, wird mit Empfangsdaten überschrieben
- * length    Länge des Puffers
-*/
-
-{
+int SpiWriteRead (int fd, unsigned char *data, int length) {
     struct spi_ioc_transfer spi[length]; /* Bibliotheksstruktur fuer Schreiben/Lesen */
     uint8_t bits = 8;                    /* Datenlaenge */
     uint32_t speed = 500000;             /* Datenrate */
@@ -247,44 +240,13 @@ void FPGARendererRPISPI::render() {
         cmd_buf[0] = 0x03;
         cmd_buf[1] = y;
 
-//        SpiWriteRead(fd, cmd_buf, 2);
 //        spiWrite(spidevfilehandle, cmd_buf, 2);
-
-
-//        /* Set CS high */
-//        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
-//        cmd_buf[i++] = 0x28; /* gpio */
-//        cmd_buf[i++] = 0x2b; /* dir  */
-//
-//        /* Set CS low */
-//        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
-//        cmd_buf[i++] = 0x00; /* gpio */
-//        cmd_buf[i++] = 0x2b; /* dir  */
-//
-//        /* SPI header */
-//        cmd_buf[i++] = 0x11; /* MC_DATA_OUT | MC_DATA_OCN */
-//        cmd_buf[i++] = 2-1;
-//        cmd_buf[i++] = 0;
-
-//        /* SPI payload */
-//        cmd_buf[i++] = 0x03;
-//        cmd_buf[i++] = y;
-//
-//        /* Set CS high */
-//        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
-//        cmd_buf[i++] = 0x28; /* gpio */
-//        cmd_buf[i++] = 0x2b; /* dir  */
-//
-////        mpsse_send_raw(cmd_buf, i);
-//        spiWrite(spidevfilehandle, cmd_buf, i);
+//        SpiWriteRead(fd, cmd_buf, 2);
     }
 
     /* Swap Frame */
     cmd_buf[0] = 0x04;
     cmd_buf[1] = 0x00;
-//    set_cs(0);
-//    mpsse_send_spi(cmd_buf, 2);
-//    set_cs(1);
 
 //    spiWrite(spidevfilehandle, cmd_buf, 2);
 //    SpiWriteRead(fd, cmd_buf, 2);
