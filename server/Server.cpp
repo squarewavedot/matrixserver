@@ -70,7 +70,7 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
 //                std::thread([renderer](){renderer->render();}).detach();
                 renderer->render();
                 auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-                std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
+//                std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
             }
             break;
         case matrixserver::appAlive:

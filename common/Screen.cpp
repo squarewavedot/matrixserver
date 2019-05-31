@@ -20,6 +20,10 @@ std::vector<Color> & Screen::getScreenData() {
     return screenData;
 }
 
+Color * Screen::getScreenDataRaw() {
+    return screenData.data();
+}
+
 void Screen::setScreenData(Color *data) {
     screenData.assign(data, data+screenDataSize);
 }

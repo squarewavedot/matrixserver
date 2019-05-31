@@ -33,6 +33,8 @@ public:
 
     std::vector<Color> & getScreenData();
 
+    Color * getScreenDataRaw();
+
     void setScreenData(Color *data);
 
     void setScreenData(std::vector<Color> &);

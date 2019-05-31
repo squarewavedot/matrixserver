@@ -1,6 +1,6 @@
 #include "CubeTest.h"
 
-CubeTest::CubeTest() : CubeApplication(50){
+CubeTest::CubeTest() : CubeApplication(40){
 
 }
 
