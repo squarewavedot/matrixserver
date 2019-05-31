@@ -1,15 +1,15 @@
-#ifndef MATRIXSERVER_FPGARENDERER_H
-#define MATRIXSERVER_FPGARENDERER_H
+#ifndef MATRIXSERVER_FPGARENDERERFTDI_H
+#define MATRIXSERVER_FPGARENDERERFTDI_H
 
 #include <IRenderer.h>
 #include <mutex>
 #include "Screen.h"
 
-class FPGARenderer : public IRenderer {
+class FPGARendererFTDI : public IRenderer {
 public:
-    FPGARenderer();
+    FPGARendererFTDI();
 
-    FPGARenderer(std::vector<std::shared_ptr<Screen>>);
+    FPGARendererFTDI(std::vector<std::shared_ptr<Screen>>);
 
     void init(std::vector<std::shared_ptr<Screen>>);
 
@@ -26,4 +26,4 @@ private:
     std::mutex renderMutex;
 };
 
-#endif //MATRIXSERVER_FPGARENDERER_H
+#endif //MATRIXSERVER_FPGARENDERERFTDI_H

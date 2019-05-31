@@ -4,7 +4,7 @@
 #include <iterator>
 #include <cmath>
 
-BreakoutGame::BreakoutGame() : CubeApplication(30){
+BreakoutGame::BreakoutGame() : CubeApplication(35){
   reset();
 }
 

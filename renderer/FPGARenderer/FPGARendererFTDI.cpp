@@ -1,4 +1,4 @@
-#include "FPGARenderer.h"
+#include "FPGARendererFTDI.h"
 
 #include <cstring>
 
@@ -40,22 +40,22 @@ static void set_cs(int cs_b)
     mpsse_set_gpio(gpio, direction);
 }
 
-FPGARenderer::FPGARenderer() {
+FPGARendererFTDI::FPGARendererFTDI() {
 
 }
 
-FPGARenderer::FPGARenderer(std::vector<std::shared_ptr<Screen>> initScreens) {
+FPGARendererFTDI::FPGARendererFTDI(std::vector<std::shared_ptr<Screen>> initScreens) {
     init(initScreens);
 }
 
-void FPGARenderer::init(std::vector<std::shared_ptr<Screen>> initScreens) {
+void FPGARendererFTDI::init(std::vector<std::shared_ptr<Screen>> initScreens) {
     screens = initScreens;
 
     std::cout << "Init SPI Driver" << std::endl;
     mpsse_init(0, NULL, false);
 }
 
-void FPGARenderer::setScreenData(int screenId, Color *screenData) {
+void FPGARendererFTDI::setScreenData(int screenId, Color *screenData) {
     if(!renderMutex.try_lock())
         return;
     if (screenId < screens.size()) {
@@ -64,18 +64,23 @@ void FPGARenderer::setScreenData(int screenId, Color *screenData) {
     renderMutex.unlock();
 }
 
-void FPGARenderer::render() {
+void FPGARendererFTDI::render() {
     if(!renderMutex.try_lock())
         return;
     //Color tempPixelColor;
 
-    int llen = 64*3*6;
-    int flen = 64*llen;
+    const int screenWidth = screens[0]->getWidth();
+    const int screenHeight = screens[0]->getHeight();
+    const int bitDepth = sizeof(Color);
+    const int screenCount = screens.size();
+
+    int llen = screenWidth * bitDepth * screenCount;
+    int flen = screenHeight * llen;
     uint8_t *buf = (uint8_t*)malloc(flen);
 
     uint8_t *cmd_buf = (uint8_t*)malloc(llen+128);
     /* Upload all the lines */
-    for (int y=0; y<64; y++)
+    for (int y=0; y<screenHeight; y++)
     {
         int i=0;
 
@@ -93,7 +98,7 @@ void FPGARenderer::render() {
         cmd_buf[i++] = 0x80;
 
         Color tmpColor;
-        for(auto screen : screens) {
+        for(const auto& screen : screens) {
             for(int x = 0; x < screen->getWidth(); x++) {
                 switch (screen->getRotation()) {
                     case Rotation::rot0:
@@ -111,11 +116,10 @@ void FPGARenderer::render() {
                     default:
                         break;
                 }
-                cmd_buf[i + screen->getOffsetX() * (llen / 6) + x * 3] = tmpColor.r();
-                cmd_buf[i + screen->getOffsetX() * (llen / 6) + x * 3 + 1] = tmpColor.g();
-                cmd_buf[i + screen->getOffsetX() * (llen / 6) + x * 3 + 2] = tmpColor.b();
+                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepth] = tmpColor.r();
+                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepth + 1] = tmpColor.g();
+                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepth + 2] = tmpColor.b();
             }
-//            memcpy(cmd_buf + i + screen->getOffsetX()*(llen/6), &((uint8_t *) screen->getScreenData().data())[y * (llen/6)], llen/6);
         }
         i += llen;
 
@@ -165,61 +169,15 @@ void FPGARenderer::render() {
     } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 #endif
 
-
-//    auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-    for (auto screen : screens) {
-       /* auto ScreenData = screen->getScreenData();
-        switch (screen->getRotation()) {
-            case Rotation::rot0:
-                for (int i = 0, x = screen->getWidth() * screen->getOffsetX(); i < screen->getWidth(); i++, x++) {
-                    for (int j = 0, y = screen->getHeight() * screen->getOffsetY(); j < screen->getHeight(); j++, y++) {
-                        tempPixelColor = ScreenData[j + i * screen->getWidth()];
-                        rgbFrameCanvas->SetPixel(x, y, tempPixelColor.r(), tempPixelColor.g(), tempPixelColor.b());
-                    }
-                }
-                break;
-            case Rotation::rot90:
-                for (int i = 0, x = screen->getWidth() * screen->getOffsetX() + screen->getWidth() - 1; i < screen->getWidth(); i++, x--) {
-                    for (int j = 0, y = screen->getHeight() * screen->getOffsetY(); j < screen->getHeight(); j++, y++) {
-                        tempPixelColor = ScreenData[i + j * screen->getWidth()];
-                        rgbFrameCanvas->SetPixel(x, y, tempPixelColor.r(), tempPixelColor.g(), tempPixelColor.b());
-                    }
-                }
-                break;
-            case Rotation::rot180:
-                for (int i = 0, x = screen->getWidth() * screen->getOffsetX() + screen->getWidth() - 1;
-                     i < screen->getWidth(); i++, x--) {
-                    for (int j = 0, y = screen->getHeight() * screen->getOffsetY() + screen->getHeight() - 1;
-                         j < screen->getHeight(); j++, y--) {
-                        tempPixelColor = ScreenData[j + i * screen->getWidth()];
-                        rgbFrameCanvas->SetPixel(x, y, tempPixelColor.r(), tempPixelColor.g(), tempPixelColor.b());
-                    }
-                }
-                break;
-            case Rotation::rot270:
-                for (int i = 0, x = screen->getWidth() * screen->getOffsetX(); i < screen->getWidth(); i++, x++) {
-                    for (int j = 0, y = screen->getHeight() * screen->getOffsetY() + screen->getHeight() - 1; j < screen->getHeight(); j++, y--) {
-                        tempPixelColor = ScreenData[i + j * screen->getWidth()];
-                        rgbFrameCanvas->SetPixel(x, y, tempPixelColor.r(), tempPixelColor.g(), tempPixelColor.b());
-                    }
-                }
-                break;
-            default:
-                break;
-        }*/
-    }
-//    auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-//    std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
-
     renderMutex.unlock();
 }
 
-void FPGARenderer::setGlobalBrightness(int brightness) {
+void FPGARendererFTDI::setGlobalBrightness(int brightness) {
     if (brightness <= 100 && brightness >= 0) {
         globalBrightness = brightness;
     }
 }
 
-int FPGARenderer::getGlobalBrightness() {
+int FPGARendererFTDI::getGlobalBrightness() {
     return globalBrightness;
 }

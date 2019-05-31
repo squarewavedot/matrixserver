@@ -4,7 +4,7 @@
 #include <boost/log/trivial.hpp>
 
 #include <Server.h>
-#include <FPGARenderer.h>
+#include <FPGARendererFTDI.h>
 #include <TcpServer.h>
 
 #include <matrixserver.pb.h>
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     }
 
 
-    auto rendererFPGA = std::make_shared<FPGARenderer>(screens);
+    auto rendererFPGA = std::make_shared<FPGARendererFTDI>(screens);
 //    auto rendererSimulator = std::make_shared<SimulatorRenderer>(screens, "10.42.42.69");
 
     Server server(rendererFPGA, serverConfig);

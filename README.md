@@ -31,11 +31,12 @@ TODO
         * Screen & Color classes
 
 * renderer
-	* different renderers for interface with physical or virual displays
+	* different renderers for interface with physical or virtual displays
+	* multiple renderers can be used at the same time. i.e. SimulatorRenderer(remote over network) && HardwareRenderer
 	* currently implemented:
 		* RGBMatrixRenderer: hardwareinterface via hzeller rpi-rgb-matrix library
 		* SimulatorRenderer: softwareinterface for the CubeSimulator project (see [https://github.com/squarewavedot/CubeSimulator])
-		* FPGARenderer: currently not implemented, meant to be the new hardwareinterface to LED Panels
+		* FPGARendererFTDI: FTDI protocol implementation of FPGA rendering. Meant to be used together with [https://github.com/squarewavedot/ice40-playground.git]
 * server & application
 	* server logic
 	* application interface library (applications link against this)
