@@ -83,7 +83,7 @@ void FPGARendererRPISPI::init(std::vector<std::shared_ptr<Screen>> initScreens) 
     std::cout << "Init SPI Driver" << std::endl;
     gpioInitialise();
     uint32_t spiSpeed = 30000000;
-    uint32_t spiFlags = 0x40 & 0x3FFFFF; //http://abyz.me.uk/rpi/pigpio/cif.html#spiOpen
+    uint32_t spiFlags = 0x00 & 0x3FFFFF; //http://abyz.me.uk/rpi/pigpio/cif.html#spiOpen
     spidevfilehandle = spiOpen(0,spiSpeed,spiFlags);
 //
 ///* Device oeffen */
@@ -162,18 +162,17 @@ void FPGARendererRPISPI::render() {
         return;
     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 
-//
-//    /* Doing VSync first */
-//#if 1
-//    do {
-//        cmd_buf[0] = 0x00;
-//        cmd_buf[1] = 0x00;
-//        set_cs(0);
-//        mpsse_xfer_spi(cmd_buf, 2);
-//        set_cs(1);
-////        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
-//    } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
-//#endif
+    /* Doing VSync first */
+#if 1
+    char recv_buf[2];
+    do {
+        cmd_buf[0] = 0x00;
+        cmd_buf[1] = 0x00;
+        spiXfer(spidevfilehandle, cmd_buf, recv_buf, 2);
+//        printf("%d\n", recv_buf[0] | recv_buf[1]);
+    } while (((recv_buf[0] | recv_buf[1]) & 0x02) != 0x02);
+#endif
+
 //
 ////    auto usTotal2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
 ////    std::cout << "vsync:  " << usTotal2.count() << " us" << std::endl;
@@ -182,17 +181,6 @@ void FPGARendererRPISPI::render() {
     for (int y=0; y<screenHeight; y++)
     {
         int i=0;
-
-//        /* Set CS low */
-//        cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
-//        cmd_buf[i++] = 0x00; /* gpio */
-//        cmd_buf[i++] = 0x2b; /* dir  */
-//
-//        /* SPI packet header */
-//        cmd_buf[i++] = 0x11; /* MC_DATA_OUT | MC_DATA_OCN */
-//        cmd_buf[i++] = (llen+1-1) & 0xff;
-//        cmd_buf[i++] = (llen+1-1) >> 8;
-
         /* SPI payload */
         cmd_buf[i++] = 0x80;
 
@@ -251,6 +239,8 @@ void FPGARendererRPISPI::render() {
 
     spiWrite(spidevfilehandle, cmd_buf, 2);
 //    SpiWriteRead(fd, cmd_buf, 2);
+
+
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
     std::cout << "render: " << usTotal.count() << " us" << std::endl;
