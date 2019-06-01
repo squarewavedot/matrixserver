@@ -10,7 +10,7 @@
 const char *spiDevice = "/dev/spidev0.0";
 uint8_t spiMode = 0;
 uint8_t spiBits = 8;
-uint32_t spiSpeed = 70000000;
+uint32_t spiSpeed = 65000000;
 uint16_t spiDelay = 1;
 int spiDevFilehandle;
 
@@ -22,11 +22,25 @@ unsigned int spiIocTransfersSize, spiIocTransfersPos;
 unsigned char *spiWriteQueueBuffer;
 unsigned char *spiWriteQueueBufferCurrentPos;
 
+unsigned char spiWriteQueueBackBuffer0[65536];
+unsigned char spiWriteQueueBackBuffer1[65536];
+struct spi_ioc_transfer transferBackBuffer0[255];
+struct spi_ioc_transfer transferBackBuffer1[255];
+int buffPos = 0;
+
 bool SpiWriteQueueInit(unsigned int count, unsigned int bufferSize){
-    spiWriteQueueBuffer = (unsigned char*)malloc(bufferSize);
+    if(buffPos++%2){
+        spiWriteQueueBuffer = spiWriteQueueBackBuffer0;
+        spiIocTransfers = transferBackBuffer0;
+    }
+    else{
+        spiWriteQueueBuffer = spiWriteQueueBackBuffer1;
+        spiIocTransfers = transferBackBuffer1;
+    }
+//    spiWriteQueueBuffer = (unsigned char*)malloc(bufferSize);//49346
     spiWriteQueueBufferCurrentPos = spiWriteQueueBuffer;
 
-    spiIocTransfers = (spi_ioc_transfer *)malloc(sizeof(struct spi_ioc_transfer) * count);
+//    spiIocTransfers = (spi_ioc_transfer *)malloc(sizeof(struct spi_ioc_transfer) * count);
     memset (spiIocTransfers, 0, sizeof(struct spi_ioc_transfer) * count);
     spiIocTransfersSize = count;
     spiIocTransfersPos = 0;
@@ -71,7 +85,11 @@ bool SpiWriteQueueAddCSTrigger(){
 
 void SpiWriteQueueTrigger(){
 //    std::cout << "SpiWriteQueue trigger, size: " << spiIocTransfersPos << std::endl;
-    std::thread([&](){ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers) ;}).detach();
+    std::thread([&](){
+//        unsigned char * tempQueue = spiWriteQueueBuffer;
+        ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers);
+//        free(tempQueue);
+    }).detach();
 //    ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers) ;
 }
 
@@ -108,6 +126,7 @@ void FPGARendererRPISPI::init(std::vector<std::shared_ptr<Screen>> initScreens) 
     screenCount = screens.size();
     bytesPerLine = screenWidth * bitDepthInBytes * screenCount;
     cmd_buf = (unsigned char*)malloc(bytesPerLine+128);
+//    spiWriteQueueBuffer = (unsigned char*)malloc(49346); //hacky test
 
     initSpi();
 }
@@ -253,12 +272,12 @@ void FPGARendererRPISPI::render() {
     } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 
     auto usTotal2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-    std::cout << "vsync:  " << usTotal2.count() << " us" << std::endl;
+//    std::cout << "vsync:  " << usTotal2.count() << " us" << std::endl;
 
     SpiWriteQueueTrigger();
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-    std::cout << "render: " << usTotal.count() << " us" << std::endl;
+//    std::cout << "render: " << usTotal.count() << " us" << std::endl;
 
     renderMutex.unlock();
 }
