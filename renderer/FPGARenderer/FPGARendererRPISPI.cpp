@@ -22,8 +22,8 @@ unsigned int spiIocTransfersSize, spiIocTransfersPos;
 unsigned char *spiWriteQueueBuffer;
 unsigned char *spiWriteQueueBufferCurrentPos;
 
-unsigned char spiWriteQueueBackBuffer0[65536];
-unsigned char spiWriteQueueBackBuffer1[65536];
+unsigned char spiWriteQueueBackBuffer0[65535];  //49346 needed
+unsigned char spiWriteQueueBackBuffer1[65535];
 struct spi_ioc_transfer transferBackBuffer0[255];
 struct spi_ioc_transfer transferBackBuffer1[255];
 int buffPos = 0;
@@ -84,13 +84,9 @@ bool SpiWriteQueueAddCSTrigger(){
 }
 
 void SpiWriteQueueTrigger(){
-//    std::cout << "SpiWriteQueue trigger, size: " << spiIocTransfersPos << std::endl;
     std::thread([&](){
-//        unsigned char * tempQueue = spiWriteQueueBuffer;
         ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers);
-//        free(tempQueue);
     }).detach();
-//    ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers) ;
 }
 
 int SpiWriteRead(unsigned char *data, unsigned int length) {
@@ -190,16 +186,16 @@ bool FPGARendererRPISPI::initSpi() const {
 }
 
 void FPGARendererRPISPI::setScreenData(int screenId, Color *screenData) {
-    if(!renderMutex.try_lock())
+    if(!screenDataMutex.try_lock())
         return;
     if (screenId < screens.size()) {
         screens.at(screenId)->setScreenData(screenData);
     }
-    renderMutex.unlock();
+    screenDataMutex.unlock();
 }
 
 void FPGARendererRPISPI::render() {
-    if(!renderMutex.try_lock())
+    if(!screenDataMutex.try_lock())
         return;
 
     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -258,6 +254,7 @@ void FPGARendererRPISPI::render() {
 //        SpiWriteQueueAddCSTrigger();
     }
 
+
     /* Swap Frame */
     cmd_buf[0] = 0x04;
     cmd_buf[1] = 0x00;
@@ -271,15 +268,14 @@ void FPGARendererRPISPI::render() {
 //        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
     } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 
-    auto usTotal2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
+//    auto usTotal2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
 //    std::cout << "vsync:  " << usTotal2.count() << " us" << std::endl;
 
     SpiWriteQueueTrigger();
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-//    std::cout << "render: " << usTotal.count() << " us" << std::endl;
-
-    renderMutex.unlock();
+    std::cout << "render: " << usTotal.count() << " us" << std::endl;
+    screenDataMutex.unlock();
 }
 
 void FPGARendererRPISPI::setGlobalBrightness(int brightness) {

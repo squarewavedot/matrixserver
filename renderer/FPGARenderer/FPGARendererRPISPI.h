@@ -24,7 +24,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<Screen>> screens;
-    std::mutex renderMutex;
+    std::mutex screenDataMutex;
 
     bool initSpi() const;
 };
