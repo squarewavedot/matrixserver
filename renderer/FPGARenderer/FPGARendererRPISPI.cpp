@@ -1,74 +1,93 @@
 #include "FPGARendererRPISPI.h"
 
-#include <fcntl.h>                // Needed for SPI port
-#include <sys/ioctl.h>            // Needed for SPI port
-#include <linux/spi/spidev.h>     // Needed for SPI port
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/spi/spidev.h>
 #include <errno.h>
 #include <cstring>
+#include <thread>
 
-static const char *device = "/dev/spidev0.0";
-static uint8_t mode;
-static uint8_t bits = 8;
-static uint32_t speed = 32000000;
-static uint16_t delay;
-int ret, fd;
+const char *spiDevice = "/dev/spidev0.0";
+uint8_t spiMode = 0;
+uint8_t spiBits = 8;
+uint32_t spiSpeed = 70000000;
+uint16_t spiDelay = 1;
+int spiDevFilehandle;
 
-
-int screenWidth, screenHeight, bitDepthInBytes, screenCount, llen;
+int screenWidth, screenHeight, bitDepthInBytes, screenCount, bytesPerLine;
 unsigned char *cmd_buf;
 
-int SpiWriteRead (int fd, unsigned char *data, unsigned int length) {
-//    struct spi_ioc_transfer spi; /* Bibliotheksstruktur fuer Schreiben/Lesen */
-//    int i, ret;                          /* Zaehler, Returnwert */
-//
-////    /* Wortlaenge abfragen */
-////    ret = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits);
-////    if (ret < 0)
-////    {
-////        perror("Fehler Get Wortlaenge");
-////        exit(1);
-////    }
-////
-////    /* Datenrate abfragen */
-////    ret = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
-////    if (ret < 0)
-////    {
-////        perror("Fehler Get Speed");
-////        exit(1);
-////    }
-//
-//    /* Daten uebergeben */
-//
-//    spi.tx_buf        = (unsigned long)(data); // transmit from "data"
-//    spi.rx_buf        = (unsigned long)(recvdata); // receive into "data"
-//    spi.len           = length;
-//    spi.delay_usecs   = 10;
-//    spi.speed_hz      = speed;
-//    spi.bits_per_word = bits;
-//    spi.cs_change     = true;
-//
-//    ret = ioctl(fd, SPI_IOC_MESSAGE(1), &spi) ;
-//    if(ret < 0)
-//    {
-//        std::cout << "Fehler beim Senden/Empfangen - ioctl " << errno << std::endl;
-//        exit(1);
-//    }
-//    return ret;
-    struct spi_ioc_transfer spi ;
+struct spi_ioc_transfer * spiIocTransfers;
+unsigned int spiIocTransfersSize, spiIocTransfersPos;
+unsigned char *spiWriteQueueBuffer;
+unsigned char *spiWriteQueueBufferCurrentPos;
 
-// Mentioned in spidev.h but not used in the original kernel documentation
-//	test program )-:
+bool SpiWriteQueueInit(unsigned int count, unsigned int bufferSize){
+    spiWriteQueueBuffer = (unsigned char*)malloc(bufferSize);
+    spiWriteQueueBufferCurrentPos = spiWriteQueueBuffer;
 
-    memset (&spi, 0, sizeof (spi)) ;
+    spiIocTransfers = (spi_ioc_transfer *)malloc(sizeof(struct spi_ioc_transfer) * count);
+    memset (spiIocTransfers, 0, sizeof(struct spi_ioc_transfer) * count);
+    spiIocTransfersSize = count;
+    spiIocTransfersPos = 0;
+};
 
-    spi.tx_buf        = (unsigned long)data ;
-    spi.rx_buf        = (unsigned long)data ;
-    spi.len           = length ;
-    spi.delay_usecs   = 0 ;
-    spi.speed_hz      = speed;
-    spi.bits_per_word = 8;
+bool SpiWriteQueueAdd(unsigned char * data, unsigned int length) {
+    if(spiIocTransfersPos < spiIocTransfersSize){
+        memcpy(spiWriteQueueBufferCurrentPos, data, length);
+        memset (&spiIocTransfers[spiIocTransfersPos], 0, sizeof (spi_ioc_transfer));
+        spiIocTransfers[spiIocTransfersPos].tx_buf        = (unsigned long)spiWriteQueueBufferCurrentPos;
+        spiIocTransfers[spiIocTransfersPos].rx_buf        = (unsigned long)spiWriteQueueBufferCurrentPos;
+        spiIocTransfers[spiIocTransfersPos].len           = length;
+        spiIocTransfers[spiIocTransfersPos].delay_usecs   = spiDelay;
+        spiIocTransfers[spiIocTransfersPos].speed_hz      = spiSpeed;
+        spiIocTransfers[spiIocTransfersPos].bits_per_word = spiBits;
+        spiIocTransfers[spiIocTransfersPos].cs_change     = true;
+        spiWriteQueueBufferCurrentPos += length;
+        spiIocTransfersPos++;
+        return true;
+    }else{
+        std::cout << "SpiWriteQueue not large enough, omitting data!" << std::endl;
+        return false;
+    }
+}
 
-    return ioctl (fd, SPI_IOC_MESSAGE(1), &spi) ;
+bool SpiWriteQueueAddCSTrigger(){
+    if(spiIocTransfersPos < spiIocTransfersSize){
+        spiIocTransfers[spiIocTransfersPos].tx_buf        = NULL;
+        spiIocTransfers[spiIocTransfersPos].rx_buf        = NULL;
+        spiIocTransfers[spiIocTransfersPos].len           = 0;
+        spiIocTransfers[spiIocTransfersPos].delay_usecs   = spiDelay;
+        spiIocTransfers[spiIocTransfersPos].speed_hz      = spiSpeed;
+        spiIocTransfers[spiIocTransfersPos].bits_per_word = spiBits;
+        spiIocTransfers[spiIocTransfersPos].cs_change     = true;
+        spiIocTransfersPos++;
+        return true;
+    }else{
+        std::cout << "SpiWriteQueue not large enough, omitting data!" << std::endl;
+        return false;
+    }
+}
+
+void SpiWriteQueueTrigger(){
+//    std::cout << "SpiWriteQueue trigger, size: " << spiIocTransfersPos << std::endl;
+    std::thread([&](){ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers) ;}).detach();
+//    ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(spiIocTransfersPos), spiIocTransfers) ;
+}
+
+int SpiWriteRead(unsigned char *data, unsigned int length) {
+    struct spi_ioc_transfer spi;
+    memset (&spi, 0, sizeof (spi));
+
+    spi.tx_buf        = (unsigned long)data;
+    spi.rx_buf        = (unsigned long)data;
+    spi.len           = length;
+    spi.delay_usecs   = spiDelay;
+    spi.speed_hz      = spiSpeed;
+    spi.bits_per_word = spiBits;
+    spi.cs_change     = false;
+
+    return ioctl (spiDevFilehandle, SPI_IOC_MESSAGE(1), &spi) ;
 }
 
 
@@ -87,79 +106,68 @@ void FPGARendererRPISPI::init(std::vector<std::shared_ptr<Screen>> initScreens) 
     screenHeight = screens[0]->getHeight();
     bitDepthInBytes = 2;
     screenCount = screens.size();
-    llen = screenWidth * bitDepthInBytes * screenCount;
-    cmd_buf = (unsigned char*)malloc(llen+128);
+    bytesPerLine = screenWidth * bitDepthInBytes * screenCount;
+    cmd_buf = (unsigned char*)malloc(bytesPerLine+128);
 
+    initSpi();
+}
 
+bool FPGARendererRPISPI::initSpi() const {
+    int ret;
     std::cout << "Init SPI Driver" << std::endl;
 
-//    spidevfilehandle = wiringPiSPISetup(0, speed);
-
-//    gpioInitialise();
-//    uint32_t spiSpeed = 30000000;
-//    uint32_t spiFlags = 0x00 & 0x3FFFFF; //http://abyz.me.uk/rpi/pigpio/cif.html#spiOpen
-//    spidevfilehandle = spiOpen(0,spiSpeed,spiFlags);
-//
-/* Device oeffen */
-    if ((spidevfilehandle = open(device, O_RDWR)) < 0)
-    {
+    /* Device oeffen */
+    if ((spiDevFilehandle = open(spiDevice, O_RDWR)) < 0) {
         perror("Fehler Open Device");
         exit(1);
     }
 /* Mode setzen */
-    ret = ioctl(spidevfilehandle, SPI_IOC_WR_MODE, &mode);
-    if (ret < 0)
-    {
+    ret = ioctl(spiDevFilehandle, SPI_IOC_WR_MODE, &spiMode);
+    if (ret < 0) {
         perror("Fehler Set SPI-Modus");
         exit(1);
     }
 
 /* Mode abfragen */
-    ret = ioctl(spidevfilehandle, SPI_IOC_RD_MODE, &mode);
-    if (ret < 0)
-    {
+    ret = ioctl(spiDevFilehandle, SPI_IOC_RD_MODE, &spiMode);
+    if (ret < 0) {
         perror("Fehler Get SPI-Modus");
         exit(1);
     }
 
 /* Wortlaenge setzen */
-    ret = ioctl(spidevfilehandle, SPI_IOC_WR_BITS_PER_WORD, &bits);
-    if (ret < 0)
-    {
+    ret = ioctl(spiDevFilehandle, SPI_IOC_WR_BITS_PER_WORD, &spiBits);
+    if (ret < 0) {
         perror("Fehler Set Wortlaenge");
         exit(1);
     }
 
 /* Wortlaenge abfragen */
-    ret = ioctl(spidevfilehandle, SPI_IOC_RD_BITS_PER_WORD, &bits);
-    if (ret < 0)
-    {
+    ret = ioctl(spiDevFilehandle, SPI_IOC_RD_BITS_PER_WORD, &spiBits);
+    if (ret < 0) {
         perror("Fehler Get Wortlaenge");
         exit(1);
     }
 
 /* Datenrate setzen */
-    ret = ioctl(spidevfilehandle, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
-    if (ret < 0)
-    {
+    ret = ioctl(spiDevFilehandle, SPI_IOC_WR_MAX_SPEED_HZ, &spiSpeed);
+    if (ret < 0) {
         perror("Fehler Set Speed");
         exit(1);
     }
 
 /* Datenrate abfragen */
-    ret = ioctl(spidevfilehandle, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
-    if (ret < 0)
-    {
+    ret = ioctl(spiDevFilehandle, SPI_IOC_RD_MAX_SPEED_HZ, &spiSpeed);
+    if (ret < 0) {
         perror("Fehler Get Speed");
         exit(1);
     }
 
 /* Kontrollausgabe */
-    printf("SPI-Device.....: %s\n", device);
-    printf("SPI-Mode.......: %d\n", mode);
-    printf("Wortlaenge.....: %d\n", bits);
-    printf("Geschwindigkeit: %d Hz (%d MHz)\n", speed, speed/1000000);
-
+    printf("SPI-Device.....: %s\n", spiDevice);
+    printf("SPI-Mode.......: %d\n", spiMode);
+    printf("Wortlaenge.....: %d\n", spiBits);
+    printf("Geschwindigkeit: %d Hz (%d MHz)\n", spiSpeed, spiSpeed / 1000000);
 }
 
 void FPGARendererRPISPI::setScreenData(int screenId, Color *screenData) {
@@ -174,25 +182,11 @@ void FPGARendererRPISPI::setScreenData(int screenId, Color *screenData) {
 void FPGARendererRPISPI::render() {
     if(!renderMutex.try_lock())
         return;
+
     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 
-    /* Doing VSync first */
-#if 1
-    char recv_buf[2];
-    do {
-        cmd_buf[0] = 0x00;
-        cmd_buf[1] = 0x00;
-//        std::cout << "vsync" << std::endl;
-        SpiWriteRead(spidevfilehandle, cmd_buf, 2);
-//        spiXfer(spidevfilehandle, cmd_buf, recv_buf, 2);
-//        wiringPiSPIDataRW(0, cmd_buf, 2);
-//        printf("%d\n", recv_buf[0] | recv_buf[1]);
-    } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
-#endif
-
-//
-////    auto usTotal2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-////    std::cout << "vsync:  " << usTotal2.count() << " us" << std::endl;
+    // 2 transfers per line (linedata + line flush) + 1 frame swap, 3 additional bytes (startbyte + line flush) per linelength + 2 bytes for frameswap
+    SpiWriteQueueInit(screenHeight * 2 + 1, (bytesPerLine+3) * screenHeight + 2);
 
     /* Upload all the lines */
     for (int y=0; y<screenHeight; y++)
@@ -227,42 +221,41 @@ void FPGARendererRPISPI::render() {
                         break;
                 }
                 //bitDepthInBytes == 2
-                pixelP = (uint16_t *)(cmd_buf + i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes);
-//                *pixelP = (tmpColor.r() | tmpColor.g()<<6 | tmpColor.b()<<11);
+                pixelP = (uint16_t *)(cmd_buf + i + screen->getOffsetX() * (bytesPerLine / screenCount) + x * bitDepthInBytes);
                 *pixelP = tmpColor.r() >> 3 << 11 | tmpColor.g() >> 2 << 6 | tmpColor.b() >> 3;
                 //bitDepthInBytes == 3
-//                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes] = tmpColor.r();
-//                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes + 1] = tmpColor.g();
-//                cmd_buf[i + screen->getOffsetX() * (llen / screenCount) + x * bitDepthInBytes + 2] = tmpColor.b();
+//                cmd_buf[i + screen->getOffsetX() * (bytesPerLine / screenCount) + x * bitDepthInBytes] = tmpColor.r();
+//                cmd_buf[i + screen->getOffsetX() * (bytesPerLine / screenCount) + x * bitDepthInBytes + 1] = tmpColor.g();
+//                cmd_buf[i + screen->getOffsetX() * (bytesPerLine / screenCount) + x * bitDepthInBytes + 2] = tmpColor.b();
             }
         }
-        i += llen;
+        i += bytesPerLine;
+        SpiWriteQueueAdd(cmd_buf, i);
 
-//        spiWrite(spidevfilehandle, cmd_buf, i);
-//        wiringPiSPIDataRW(0, cmd_buf, i);
-
-//        std::cout << "line" << std::endl;
-        SpiWriteRead(spidevfilehandle, cmd_buf, i);
-
+        //Line flush command
         cmd_buf[0] = 0x03;
         cmd_buf[1] = y;
-
-//        spiWrite(spidevfilehandle, cmd_buf, 2);
-//        wiringPiSPIDataRW(0, cmd_buf, 2);
-//        std::cout << "line swap" << std::endl;
-        SpiWriteRead(spidevfilehandle, cmd_buf, 2);
+        SpiWriteQueueAdd(cmd_buf, 2);
+//        SpiWriteQueueAddCSTrigger();
     }
 
     /* Swap Frame */
     cmd_buf[0] = 0x04;
     cmd_buf[1] = 0x00;
+    SpiWriteQueueAdd(cmd_buf, 2);
 
-//    wiringPiSPIDataRW(0, cmd_buf, 2);
-//    spiWrite(spidevfilehandle, cmd_buf, 2);
-//    std::cout << "frameswap" << std::endl;
-    SpiWriteRead(spidevfilehandle, cmd_buf, 2);
+    /* Doing VSync first */
+    do {
+        cmd_buf[0] = 0x00;
+        cmd_buf[1] = 0x00;
+        SpiWriteRead(cmd_buf, 2);
+//        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
+    } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 
+    auto usTotal2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
+    std::cout << "vsync:  " << usTotal2.count() << " us" << std::endl;
 
+    SpiWriteQueueTrigger();
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
     std::cout << "render: " << usTotal.count() << " us" << std::endl;

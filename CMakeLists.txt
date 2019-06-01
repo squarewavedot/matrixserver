@@ -4,7 +4,7 @@ project(matrixserver)
 
 set(CMAKE_CXX_STANDARD 14)
 
-#set(Boost_FIND_QUIETLY ON) #FINALLY!!!
+set(Boost_FIND_QUIETLY ON) #FINALLY!!!
 
 if (EXISTS "/boot/LICENCE.broadcom") # I expect this file to be only found on an Raspian distribution
     set(BUILD_RASPBERRYPI true)
@@ -21,6 +21,8 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
             "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_subdirectory(common)
 add_subdirectory(renderer)

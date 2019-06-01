@@ -25,7 +25,8 @@ public:
 private:
     std::vector<std::shared_ptr<Screen>> screens;
     std::mutex renderMutex;
-    int spidevfilehandle;
+
+    bool initSpi() const;
 };
 
 
