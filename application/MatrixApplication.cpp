@@ -52,6 +52,7 @@ void MatrixApplication::registerAtServer() {
 void MatrixApplication::renderToScreens() {
     auto setScreenMessage = std::make_shared<matrixserver::MatrixServerMessage>();
     setScreenMessage->set_messagetype(matrixserver::setScreenFrame);
+    setScreenMessage->set_appid(appId);
     int i = 0;
     for (auto screen : screens) {
         auto screenData = setScreenMessage->add_screendata();
@@ -118,8 +119,10 @@ MatrixApplication::handleRequest(std::shared_ptr<UniversalConnection> connection
             auto response = std::make_shared<matrixserver::MatrixServerMessage>();
             response->set_messagetype(matrixserver::appPause);
             response->set_appid(appId);
-            if (pause())
+            if (pause()){
                 response->set_status(matrixserver::success);
+                std::cout << "app Paused" << std::endl;
+            }
             else
                 response->set_status(matrixserver::error);
             connection->sendMessage(response);

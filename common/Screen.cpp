@@ -1,3 +1,4 @@
+#include <cstring>
 #include "Screen.h"
 
 Screen::Screen(int setWidth, int setHeight, int setScreenId) {
@@ -49,15 +50,23 @@ void Screen::setPixel(int x, int y, uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 void Screen::setPixel(int x, int y, Color col) {
-    screenData[getArrayIndex(x, y)] = col;
+    setPixel(x, y, col, false);
+}
+
+void Screen::setPixel(int x, int y, Color col, bool add) {
+    if(x >= 0 && y >= 0 && x < width && y < height)
+        screenData.at(getArrayIndex(x, y)) = add ? screenData.at(getArrayIndex(x, y)) + col : col;
 }
 
 Color Screen::getPixel(int x, int y){
-    return screenData[getArrayIndex(x, y)];
+    if(x >= 0 && y >= 0 && x < width && y < height)
+        return screenData[getArrayIndex(x, y)];
+    else
+        return Color::black();
 }
 
 void Screen::clear() {
-    fill(Color::black());
+    std::memset(screenData.data(), 0, screenData.size() * sizeof(Color));
 }
 
 void Screen::fill(uint8_t red, uint8_t green, uint8_t blue) {

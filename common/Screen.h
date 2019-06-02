@@ -25,6 +25,8 @@ public:
 
     void setPixel(int x, int y, Color col);
 
+    void setPixel(int x, int y, Color col, bool add);
+
     void clear();
 
     void fill(uint8_t red, uint8_t green, uint8_t blue);

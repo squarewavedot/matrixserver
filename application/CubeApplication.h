@@ -87,7 +87,6 @@ public:
 private:
     const int virtualSize_;
     const int virtualSizeAll_;
-    colorPixelArrayType pixels3D;
 };
 
 //constrain class
