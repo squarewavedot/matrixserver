@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
+
 CubeApplication::CubeApplication(int fps, std::string setServerAddress, std::string setServerPort) :
         MatrixApplication(fps, setServerAddress, setServerPort),
         virtualSize_(VIRTUALCUBESIZE),
@@ -76,7 +77,7 @@ void CubeApplication::fillAll(Color col){
 }
 
 void CubeApplication::clear(){
-    fillAll(Color::black());
+    std::memset(pixels3D.data(), 0, pixels3D.num_elements()* sizeof(Color));
 }
 
 void CubeApplication::render(){
