@@ -29,6 +29,8 @@ public:
 
     void addRenderer(std::shared_ptr<IRenderer>);
 
+    App * getAppByID(int searchID);
+
 private:
     std::vector<App> apps;
     std::vector<std::shared_ptr<IRenderer>> renderers;

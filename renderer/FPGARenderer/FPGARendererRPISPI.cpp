@@ -274,7 +274,7 @@ void FPGARendererRPISPI::render() {
     SpiWriteQueueTrigger();
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-    std::cout << "render: " << usTotal.count() << " us" << std::endl;
+//    std::cout << "render: " << usTotal.count() << " us" << std::endl;
     screenDataMutex.unlock();
 }
 

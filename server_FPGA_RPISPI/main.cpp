@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 //    server.addRenderer(rendererSimulator);
 
     while (server.tick()) {
-        sleep(1);
+        usleep(100000);
     };
     return 0;
 }

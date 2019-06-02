@@ -10,6 +10,14 @@
 
 #include <chrono>
 
+App * Server::getAppByID(int searchID){
+    for(auto app : apps){
+        if(app.getAppId() == searchID)
+            return & app;
+    }
+    return nullptr;
+}
+
 Server::Server(std::shared_ptr<IRenderer> setRenderer, matrixserver::ServerConfig & setServerConfig) :
         ioContext(),
         serverConfig(setServerConfig),
@@ -61,16 +69,24 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
         case matrixserver::setScreenFrame:
             //TODO check if message.->appID is current top application to write screen data
 //            BOOST_LOG_TRIVIAL(debug) << "[matrixserver] new ScreenFrame received";
-            for(auto renderer : renderers){
-                for(auto screenInfo : message->screendata()){
-                    renderer->setScreenData(screenInfo.screenid(), (Color *)screenInfo.framedata().data()); //TODO: remove C style cast
-                }
+            if(message->appid() == apps.back().getAppId()){
+                for(auto renderer : renderers){
+                    for(auto screenInfo : message->screendata()){
+                        renderer->setScreenData(screenInfo.screenid(), (Color *)screenInfo.framedata().data()); //TODO: remove C style cast
+                    }
 
-                auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-                std::thread([renderer](){renderer->render();}).detach();
-//                renderer->render();
-                auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
+                    auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+//                    std::thread([renderer](){renderer->render();}).detach();
+                renderer->render();
+                    auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
 //                std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
+                }
+            }else{
+                //send app to pause
+                std::cout << "send app " << message->appid() << " to pause" << std::endl;
+                auto msg = std::make_shared<matrixserver::MatrixServerMessage>();
+                msg->set_messagetype(matrixserver::appPause);
+                connection->sendMessage(msg);
             }
             break;
         case matrixserver::appAlive:
