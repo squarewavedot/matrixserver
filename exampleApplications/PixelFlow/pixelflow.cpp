@@ -18,12 +18,14 @@ bool PixelFlow::loop(){
     static Color col1(0,255-rand()%100,255-rand()%200);
 
 
-    clear();
+//    clear();
+    fade(0.85);
     //create new Raindrops
     for (int foo = 0; foo < 60; foo++){
         float randAngle = rand()%360;
-        float vx = 0.5 * cos(randAngle*PI/180);
-        float vy = 0.5 * sin(randAngle*PI/180);
+        float speed = 0.5;
+        float vx = speed * cos(randAngle*PI/180);
+        float vy = speed * sin(randAngle*PI/180);
         rdrops.push_back(std::make_shared<Drop>(Vector3i(VIRTUALCUBEMAXINDEX,VIRTUALCUBEMAXINDEX,VIRTUALCUBEMAXINDEX), Vector3f(VIRTUALCUBECENTER,VIRTUALCUBECENTER,0), Vector3f(vx,vy,0), Vector3f(0,0,0),col1));
     }
 
@@ -97,7 +99,7 @@ void PixelFlow::Drop::step(){
 
     if(position_[0] < 0 || position_[1] < 0 || position_[0] > maxPos_[0] || position_[1] > maxPos_[1]) {
         velocity_[2] = 0.5;
-        acceleration_[2] = 0.03+((float)(rand()%10)/100.0f);
+        acceleration_[2] = 0.02+((float)(rand()%100)/1000.0f);
         acceleration_[1] = 0;
         acceleration_[0] = 0;
         if (vxOld_ == 0 && vyOld_ == 0){

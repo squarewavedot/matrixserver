@@ -69,6 +69,7 @@ public:
     void fillAll(Color col);
     void render();
     void clear();
+    void fade(float factor);
     void drawLine3D(int x1, int y1, int z1, const int x2, const int y2, const int z2, Color col);
     void drawLine3D(Vector3i start, Vector3i end, Color col);
     void drawText(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, std::string text);

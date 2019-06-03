@@ -110,3 +110,11 @@ int Screen::getOffsetY() {
     return offsetY;
 }
 
+void Screen::fade(float factor) {
+    if(factor > 0.0f && factor < 1.0f){
+        for(auto & color : screenData){
+            color *= factor;
+        }
+    }
+}
+

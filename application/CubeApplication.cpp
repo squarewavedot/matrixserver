@@ -393,3 +393,8 @@ Vector3f CubeApplication::getPointOnScreen(ScreenNumber screenNr, Vector2f point
     }
     return result;
 }
+
+void CubeApplication::fade(float factor) {
+    for(auto screen : screens)
+        screen->fade(factor);
+}

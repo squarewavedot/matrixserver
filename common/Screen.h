@@ -29,6 +29,8 @@ public:
 
     void clear();
 
+    void fade(float factor);
+
     void fill(uint8_t red, uint8_t green, uint8_t blue);
 
     void fill(Color col);

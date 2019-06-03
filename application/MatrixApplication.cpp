@@ -14,7 +14,7 @@ MatrixApplication::MatrixApplication(int fps, std::string setServerAddress, std:
     setFps(fps);
     appId = 0;
     appState = AppState::starting;
-    ioThread = new boost::thread([this]() { io_context.run(); });
+//    ioThread = new boost::thread([this]() { io_context.run(); });
     while (!connect(serverAddress, serverPort)) {
         sleep(1);
     }
@@ -27,7 +27,7 @@ bool MatrixApplication::connect(const std::string &serverAddress, const std::str
     auto ipcCon = std::make_shared<IpcConnection>();
     ipcCon->connectToServer("matrixserver");
     connection = ipcCon;
-    //connection = TcpClient::connect(io_context, serverAddress, serverPort);
+//    connection = TcpClient::connect(io_context, serverAddress, serverPort);
 //    connection = UnixSocketClient::connect(io_context, "/tmp/matrixserver.sock");
 
     if (!connection->isDead()) {
@@ -50,6 +50,7 @@ void MatrixApplication::registerAtServer() {
 }
 
 void MatrixApplication::renderToScreens() {
+    auto startTime = micros();
     auto setScreenMessage = std::make_shared<matrixserver::MatrixServerMessage>();
     setScreenMessage->set_messagetype(matrixserver::setScreenFrame);
     setScreenMessage->set_appid(appId);
@@ -60,23 +61,25 @@ void MatrixApplication::renderToScreens() {
         screenData->set_framedata((char *) screen->getScreenData().data(), screen->getScreenDataSize() * sizeof(Color));
         screenData->set_encoding(matrixserver::ScreenData_Encoding_rgb24bbp);
     }
+//    std::cout << "data ready: " << micros() - startTime << "us" << std::endl;
     connection->sendMessage(setScreenMessage);
+//    std::cout << "data sent:  " << micros() - startTime << "us" << std::endl;
 }
 
 void MatrixApplication::internalLoop() {
     bool running = true;
     while (running) {
-        long startTime = micros();
+        auto startTime = micros();
         if (appState == AppState::running) {
             running = loop();
             renderToScreens();
         }
         checkConnection();
-        long sleepTime = (1000000 / fps) - (micros() - startTime);
+        auto sleepTime = (1000000 / fps) - (micros() - startTime);
         if (sleepTime > 0) {
             usleep(sleepTime);
         } else {
-            BOOST_LOG_TRIVIAL(warning) << "[Application] FPS drop, load: " << load;
+//            BOOST_LOG_TRIVIAL(warning) << "[Application] FPS drop, load: " << load;
         }
         load = 1.0f - ((float) sleepTime / (1000000.0f / (float) fps));
     }
