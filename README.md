@@ -5,7 +5,7 @@ This is a screenserver for the purpose of beeing used with differently orientate
 # Dependencies
 
 on raspbian and ubuntu:
-`sudo apt install git libeigen3-dev cmake wiringpi libboost-all-dev libasound2-dev libprotobuf-dev protobuf-compiler libmagick++-dev`
+`sudo apt install git libeigen3-dev cmake wiringpi libboost-all-dev libasound2-dev libprotobuf-dev protobuf-compiler`
 
 # Building
 
