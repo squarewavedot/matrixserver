@@ -1,6 +1,8 @@
 # LEDCube matrixserver
 
-This is a screenserver for the purpose of beeing used with differently orientated LED Matrix panels. It currently has implementations for the LEDCube project, but it can also be used in simple, planar screen orientations, as well as other complex screen orientations
+This is a screenserver for the purpose of being used with differently orientated LED Matrix panels. 
+It currently has been implemented for the LEDCube project, but it can also be used in simple, 
+planar screen orientations, as well as other complex screen orientations.  
 
 # Dependencies
 
@@ -16,7 +18,12 @@ tested on ubuntu, raspbian & macOS
 
 # Quickstart
 
-TODO
+If you have an IceBreaker board with HUB75 PMOD:  
+* at first load the FPGA with the `rgb_panel` project example (https://github.com/squarewavedot/ice40-playground/tree/master/projects/rgb_panel)   
+* hook up the icebreaker to the Raspberry Pi via USB
+* compile and start the `Server_FPGA` target (in the `build` folder `make Server_FPGA`)
+* In another Terminal compile and start the `cubetestapp` or `PixelFlow` or any other target from the exampleApplications folder.
+
 
 ## The Project is divided into multiple modules:
 
@@ -25,7 +32,7 @@ TODO
 	* protobuf message definition for communication
         * multiple communication classes
 	
-                * IPC (boost message queue, currently the most efficent local communication)
+                * IPC (boost message queue, currently the most efficient local communication)
                 * UnixSocket
                 * TCPSocket (remote communication possible)
         * Screen & Color classes
@@ -46,6 +53,10 @@ TODO
 
 * server_* folders:
 	* these are main.cpp with setups for servers with the different renderers
+	    * server_FPGA
+	        * the Icebreaker USB FTDI Renderer
+	    * server_FPGA_RPISPI
+	        * the Icebreaker native Raspberry Pi SPI renderer (more infos soon)
 		* server_testapp
 			* if you have installed OpenCV this target will be available. It shows the Screens as simple OpenCV windows (useful for debugging)
 		* server_simulator
