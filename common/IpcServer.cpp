@@ -26,7 +26,7 @@ void IpcServer::acceptLoop() {
         for(int i = 0; i < 20; i++)
             sendMQname << (char)(rand()%26+'a'); // add random character [a...z]
 
-        auto receiveMQ = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create, sendMQname.str().data(), 10, SERVERMESSAGESIZE, boost::interprocess::permissions(0666));
+        auto receiveMQ = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create, sendMQname.str().data(), 1, SERVERMESSAGESIZE, boost::interprocess::permissions(0666));
         auto sendMQ = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only, std::string(receiveBuffer, recvd_size).data());
         sendMQ->send(sendMQname.str().data(), sendMQname.str().size(), 0);
 

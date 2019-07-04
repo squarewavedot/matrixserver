@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <cstring>
 #include <thread>
+#include <unistd.h>
 
 const char *spiDevice = "/dev/spidev0.0";
 uint8_t spiMode = 0;
@@ -265,6 +266,7 @@ void FPGARendererRPISPI::render() {
         cmd_buf[0] = 0x00;
         cmd_buf[1] = 0x00;
         SpiWriteRead(cmd_buf, 2);
+        usleep(100);
 //        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
     } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 

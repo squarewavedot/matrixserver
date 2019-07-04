@@ -82,7 +82,7 @@ bool IpcConnection::connectToServer(std::string serverAddress) {
             receiveMQname << (char)(rand()%26+'a'); // add random character [a...z]
 
         auto tempServer = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only, serverAddress.data());
-        this->receiveMQ = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create, receiveMQname.str().data(), 1, MAXIPCMESSAGESIZE, boost::interprocess::permissions(0666));
+        this->receiveMQ = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create, receiveMQname.str().data(), 10, MAXIPCMESSAGESIZE, boost::interprocess::permissions(0666));
         tempServer->send(receiveMQname.str().data(), receiveMQname.str().size(), 0);
         char tempData[MAXIPCMESSAGESIZE];
         boost::interprocess::message_queue::size_type recvd_size;

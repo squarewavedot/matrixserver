@@ -8,7 +8,7 @@ set(Boost_FIND_QUIETLY ON) #FINALLY!!!
 
 if (EXISTS "/boot/LICENCE.broadcom") # I expect this file to be only found on an Raspian distribution
     set(BUILD_RASPBERRYPI true)
-    message("Build for Raspberry Pi is enabled")
+    message("Build on Raspberry Pi is enabled")
 endif ()
 
 set(default_build_type "Release")
