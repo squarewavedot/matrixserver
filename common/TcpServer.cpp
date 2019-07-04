@@ -12,6 +12,7 @@ TcpServer::TcpServer(boost::asio::io_service &setIo, boost::asio::ip::tcp::endpo
 void TcpServer::doAccept() {
     BOOST_LOG_TRIVIAL(debug) << "[Server] Start accepting on address: " << this->endpoint.address().to_string()
                              << " and port: " << this->endpoint.port();
+    acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
     auto tempCon = std::make_shared<SocketConnection>(io);
     this->acceptor.async_accept(tempCon->getSocket(),
                                 [this, tempCon](boost::system::error_code error) {
