@@ -8,6 +8,8 @@
 #include <thread>
 #include <unistd.h>
 
+#define TWOBYSIX
+
 const char *spiDevice = "/dev/spidev0.0";
 uint8_t spiMode = 0;
 uint8_t spiBits = 8;
@@ -15,7 +17,7 @@ uint32_t spiSpeed = 65000000;
 uint16_t spiDelay = 1;
 int spiDevFilehandle;
 
-int screenWidth, screenHeight, bitDepthInBytes, screenCount, bytesPerLine;
+int screenWidth, screenHeight, bitDepthInBytes, screenCount, bytesPerLine, bytesPerScreen, lineCount;
 unsigned char *cmd_buf;
 
 struct spi_ioc_transfer * spiIocTransfers;
@@ -121,7 +123,16 @@ void FPGARendererRPISPI::init(std::vector<std::shared_ptr<Screen>> initScreens) 
     screenHeight = screens[0]->getHeight();
     bitDepthInBytes = 2;
     screenCount = screens.size();
-    bytesPerLine = screenWidth * bitDepthInBytes * screenCount;
+
+#ifdef TWOBYSIX
+    bytesPerScreen = screenWidth * bitDepthInBytes;
+    bytesPerLine = bytesPerScreen * screenCount/2;
+    lineCount = screenHeight * 2;
+#else
+    bytesPerScreen = screenWidth * bitDepthInBytes;
+    bytesPerLine = bytesPerScreen * screenCount;
+    lineCount = screenHeight;
+#endif
     cmd_buf = (unsigned char*)malloc(bytesPerLine+128);
 //    spiWriteQueueBuffer = (unsigned char*)malloc(49346); //hacky test
 
@@ -201,6 +212,56 @@ void FPGARendererRPISPI::render() {
 
     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 
+#ifdef TWOBYSIX
+    // 2 transfers per line (linedata + line flush) + 1 frame swap, 3 additional bytes (startbyte + line flush) per linelength + 2 bytes for frameswap
+    SpiWriteQueueInit(lineCount * 2 + 1, (bytesPerLine+3) * lineCount + 2);
+
+
+    /* Upload all the lines */
+    for (int y=0; y<lineCount; y++)
+    {
+        int i=0;
+        /* SPI payload */
+        cmd_buf[i++] = 0x80;
+
+        Color tmpColor;
+        uint16_t *pixelP;
+        for(const auto& screen : screens) {
+            Color * screenData = screen->getScreenDataRaw();
+            if(!(y <= 63 && screen->getOffsetY() != 0) && !((y > 63 && screen->getOffsetY() != 1))){
+                for(int x = 0; x < screen->getWidth(); x++) {
+                    int yPos = y%screenHeight;
+                    switch (screen->getRotation()) {
+                        case Rotation::rot0:
+                            tmpColor = screenData[yPos + x * screenHeight];
+                            break;
+                        case Rotation::rot90:
+                            tmpColor = screenData[x + (screenHeight-1-yPos) * screenHeight];
+                            break;
+                        case Rotation::rot180:
+                            tmpColor = screenData[screenWidth-1-yPos + (screenHeight-1-x) * screenHeight];
+                            break;
+                        case Rotation::rot270:
+                            tmpColor = screenData[screenWidth-1-x + yPos * screenHeight];
+                            break;
+                        default:
+                            break;
+                    }
+                    pixelP = (uint16_t *)(cmd_buf + i + screen->getOffsetX() * bytesPerScreen + x * bitDepthInBytes);
+                    *pixelP = tmpColor.r() >> 3 << 11 | tmpColor.g() >> 2 << 6 | tmpColor.b() >> 3;
+                }
+            }
+        }
+        i += bytesPerLine;
+        SpiWriteQueueAdd(cmd_buf, i);
+
+        //Line flush command
+        cmd_buf[0] = 0x03;
+        cmd_buf[1] = y;
+        SpiWriteQueueAdd(cmd_buf, 2);
+//        SpiWriteQueueAddCSTrigger();
+    }
+#else
     // 2 transfers per line (linedata + line flush) + 1 frame swap, 3 additional bytes (startbyte + line flush) per linelength + 2 bytes for frameswap
     SpiWriteQueueInit(screenHeight * 2 + 1, (bytesPerLine+3) * screenHeight + 2);
 
@@ -254,7 +315,7 @@ void FPGARendererRPISPI::render() {
         SpiWriteQueueAdd(cmd_buf, 2);
 //        SpiWriteQueueAddCSTrigger();
     }
-
+#endif
 
     /* Swap Frame */
     cmd_buf[0] = 0x04;

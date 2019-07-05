@@ -71,13 +71,13 @@ int main(int argc, char **argv) {
         auto screen = std::make_shared<Screen>(screenInfo.width(), screenInfo.height(), screenInfo.screenid());
         switch(screenInfo.screenorientation()){
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_front :
-                screen->setOffsetX(4);
-                screen->setOffsetY(0);
+                screen->setOffsetX(1);
+                screen->setOffsetY(1);
                 screen->setRotation(Rotation::rot180);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_right :
-                screen->setOffsetX(3);
-                screen->setOffsetY(0);
+                screen->setOffsetX(0);
+                screen->setOffsetY(1);
                 screen->setRotation(Rotation::rot180);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_back :
@@ -86,8 +86,8 @@ int main(int argc, char **argv) {
                 screen->setRotation(Rotation::rot90);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_left :
-                screen->setOffsetX(5);
-                screen->setOffsetY(0);
+                screen->setOffsetX(2);
+                screen->setOffsetY(1);
                 screen->setRotation(Rotation::rot180);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_top :
