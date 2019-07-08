@@ -13,7 +13,7 @@
 const char *spiDevice = "/dev/spidev0.0";
 uint8_t spiMode = 0;
 uint8_t spiBits = 8;
-uint32_t spiSpeed = 65000000;
+uint32_t spiSpeed = 40000000;
 uint16_t spiDelay = 1;
 int spiDevFilehandle;
 
