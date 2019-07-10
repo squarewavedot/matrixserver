@@ -67,19 +67,20 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
             //TODO App level logic, set App on top, pause all other Apps, which aren't on top any more
             break;
         case matrixserver::setScreenFrame:
-            //TODO check if message.->appID is current top application to write screen data
-//            BOOST_LOG_TRIVIAL(debug) << "[matrixserver] new ScreenFrame received";
             if(message->appid() == apps.back().getAppId()){
                 for(auto renderer : renderers){
                     for(auto screenInfo : message->screendata()){
                         renderer->setScreenData(screenInfo.screenid(), (Color *)screenInfo.framedata().data()); //TODO: remove C style cast
                     }
-
                     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-//                    std::thread([renderer](){renderer->render();}).detach();
-                renderer->render();
+    //              std::thread([renderer](){renderer->render();}).detach();
+                    renderer->render();
+                    auto response = std::make_shared<matrixserver::MatrixServerMessage>();
+                    response->set_messagetype(matrixserver::setScreenFrame);
+                    response->set_status(matrixserver::success);
+                    connection->sendMessage(response);
                     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-                std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
+                    std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
                 }
             }else{
                 //send app to pause

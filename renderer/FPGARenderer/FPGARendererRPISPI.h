@@ -1,7 +1,6 @@
 #ifndef MATRIXSERVER_FPGARENDERERRPISPI_H
 #define MATRIXSERVER_FPGARENDERERRPISPI_H
 
-
 #include <IRenderer.h>
 #include <mutex>
 #include "Screen.h"

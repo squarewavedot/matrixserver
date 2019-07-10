@@ -7,6 +7,7 @@
 #include <TcpClient.h>
 #include <UnixSocketClient.h>
 #include <IpcConnection.h>
+#include <mutex>
 
 #define DEFAULTFPS 40
 #define MAXFPS 200
@@ -75,6 +76,8 @@ private:
     AppState appState;
     boost::asio::io_service io_context;
     matrixserver::ServerConfig serverConfig;
+
+    std::mutex renderSyncMutex;
 };
 
 

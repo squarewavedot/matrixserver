@@ -71,17 +71,19 @@ void MatrixApplication::internalLoop() {
     while (running) {
         auto startTime = micros();
         if (appState == AppState::running) {
+            renderSyncMutex.lock();
             running = loop();
             renderToScreens();
         }
         checkConnection();
-        auto sleepTime = (1000000 / fps) - (micros() - startTime);
-        if (sleepTime > 0) {
-            usleep(sleepTime);
-        } else {
-//            BOOST_LOG_TRIVIAL(warning) << "[Application] FPS drop, load: " << load;
-        }
-        load = 1.0f - ((float) sleepTime / (1000000.0f / (float) fps));
+//        auto sleepTime = (1000000 / fps) - (micros() - startTime);
+//        if (sleepTime > 0) {
+//            usleep(sleepTime);
+//        } else {
+////            BOOST_LOG_TRIVIAL(warning) << "[Application] FPS drop, load: " << load;
+//        }
+//        load = 1.0f - ((float) sleepTime / (1000000.0f / (float) fps));
+        BOOST_LOG_TRIVIAL(warning) << "[Application] rendertime: " << micros()-startTime << " us";
     }
 }
 
@@ -164,6 +166,7 @@ MatrixApplication::handleRequest(std::shared_ptr<UniversalConnection> connection
             break;
         case matrixserver::requestScreenAccess:
         case matrixserver::setScreenFrame:
+            renderSyncMutex.unlock();
         default:
             break;
     }

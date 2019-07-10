@@ -7,9 +7,9 @@ CubeTest::CubeTest() : CubeApplication(30){
 bool CubeTest::loop() {
     static int loopcount = 0;
     clear();
-    if(loopcount%2 == 0){
-        fillAll(Color::white());
-    }
+//    if(loopcount%2 == 0){
+//        fillAll(Color::white());
+//    }
 //    if(loopcount%2 == 0){
         drawLine3D(Vector3i(0,0,CUBESIZE-loopcount%CUBESIZE),Vector3i(CUBESIZE,0,CUBESIZE-loopcount%CUBESIZE), Color::red());
         drawLine3D(Vector3i(loopcount%CUBESIZE,0,CUBESIZE),Vector3i(loopcount%CUBESIZE,0,0), Color::blue());
@@ -24,4 +24,3 @@ bool CubeTest::loop() {
     loopcount++;
     return true;
 }
-x
