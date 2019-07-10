@@ -3,13 +3,16 @@
 
 #include "CubeApplication.h"
 #include "Joystick.h"
+#include <Mpu6050.h>
 
 class PixelFlow : public CubeApplication{
 public:
     PixelFlow();
     bool loop();
 private:
+    Mpu6050 Imu;
     class Particle;
+    class SurfaceParticle;
     class Drop;
 };
 
@@ -41,7 +44,19 @@ protected:
     Color color_;
 };
 
-class PixelFlow::Drop : public Particle {
+class PixelFlow::SurfaceParticle  : public Particle {
+public:
+    SurfaceParticle(Vector3i maxPos, Vector3f pos, Vector3f vel, Vector3f accel, Color col);
+    void step();
+    void warp();
+    void accelerateOnSurface();
+protected:
+    Vector3i maxPosition;
+    EdgeNumber lastEdge;
+    Vector3i lastIPosition;
+};
+
+class PixelFlow::Drop : public SurfaceParticle {
 public:
     Drop(Vector3i maxPos, Vector3f pos, Vector3f vel, Vector3f accel, Color col);
     void step();
@@ -50,6 +65,7 @@ private:
     float vxOld_;
     float vyOld_;
     Vector3i maxPos_;
+    int stepCount;
     bool rdyDelete_;
 };
 
