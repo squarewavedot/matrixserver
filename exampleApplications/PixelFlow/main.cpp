@@ -1,4 +1,3 @@
-//matrix app
 #include "pixelflow.h"
 
 int main(int argc, char *argv[]) {

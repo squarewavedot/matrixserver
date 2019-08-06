@@ -70,7 +70,7 @@ bool PixelFlow::loop(){
     //create new Raindrops
     for (int foo = 0; foo < 60; foo++){
         float randAngle = rand()%360;
-        float speed = 0.5;
+        float speed = 0;
         float vx = speed * cos(randAngle*PI/180);
         float vy = speed * sin(randAngle*PI/180);
         Vector3f startSpeed(0,0,0);
@@ -227,7 +227,7 @@ void PixelFlow::Drop::step(){
 //    if (velocity_[0] == 0 && velocity_[1] == 0  && position_[2] == maxPos_[2]){
 //        rdyDelete_ = true;
 //    }
-    if (stepCount > 160){
+    if (stepCount > 260){
         rdyDelete_ = true;
     }
     stepCount++;
