@@ -7,6 +7,7 @@ Screen::Screen(int setWidth, int setHeight, int setScreenId) {
     height = setHeight;
     screenDataSize = width*height;
     screenData.resize(width*height, 0x00);
+    clear();
 }
 
 Screen::~Screen() {

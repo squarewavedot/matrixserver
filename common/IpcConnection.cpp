@@ -10,6 +10,7 @@ IpcConnection::IpcConnection(std::shared_ptr<boost::interprocess::message_queue>
     sendMQ = sender;
     receiveMQ = receiver;
     receiveCallback = NULL;
+    dead = false;
 }
 
 
@@ -21,19 +22,22 @@ void IpcConnection::setReceiveCallback(
         std::function<void(std::shared_ptr<UniversalConnection>,
                            std::shared_ptr<matrixserver::MatrixServerMessage>)> callback) {
     receiveCallback = callback;
+    this->startReceiving();
 }
 
 void IpcConnection::readLoop() {
     boost::interprocess::message_queue::size_type recvd_size;
     unsigned int priority;
     BOOST_LOG_TRIVIAL(trace) << "[IpcConnection] start read loop";
-    while(1){
+    while(!dead){
         this->receiveMQ->receive(&receiveData, MAXIPCMESSAGESIZE, recvd_size, priority); //blocking
         auto receiveMessage = std::make_shared<matrixserver::MatrixServerMessage>();
         if (receiveMessage->ParseFromString(std::string(receiveData, recvd_size))) {
             BOOST_LOG_TRIVIAL(trace) << "[IpcConnection] Recieved full Protobuf MatrixServerMessage";
             if (this->receiveCallback != NULL) {
                 this->receiveCallback(shared_from_this(), receiveMessage);
+            }else{
+                BOOST_LOG_TRIVIAL(trace) << "[IpcConnection] NO CALLBACK!";
             }
         }
     }
@@ -90,7 +94,6 @@ bool IpcConnection::connectToServer(std::string serverAddress) {
         this->receiveMQ->receive(&tempData, MAXIPCMESSAGESIZE, recvd_size, priority); //blocking
         if(recvd_size == 20){
             this->sendMQ = std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only, std::string(tempData, recvd_size).data());
-            this->startReceiving();
             setDead(false);
         }else{
             setDead(true);
