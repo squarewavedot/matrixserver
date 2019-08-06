@@ -25,6 +25,7 @@ other stuff:
 
 #include "Color.h"
 #include "MatrixApplication.h"
+//#include "MatrixApplicationStandalone.h"
 #include "Font6px.h"
 
 #include <boost/multi_array.hpp>

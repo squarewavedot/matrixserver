@@ -10,11 +10,11 @@ set(CMAKE_CXX_FLAGS "-fPIC")
 
 set(SOURCE_FILES
         CubeApplication.cpp
-        MatrixApplication.cpp Joystick.cpp Joystick.h Mpu6050.cpp Mpu6050.h)
+        MatrixApplication.cpp MatrixApplicationStandalone.cpp Joystick.cpp Joystick.h Mpu6050.cpp Mpu6050.h)
 
 
 add_library(application SHARED ${SOURCE_FILES})
-target_link_libraries(application common)
+target_link_libraries(application common renderer FPGARenderer)
 target_link_libraries(application ${Boost_LIBRARIES} rt wiringPi)
 target_include_directories(application PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
 

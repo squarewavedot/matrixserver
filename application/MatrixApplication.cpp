@@ -3,6 +3,7 @@
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
+#include <random>
 
 MatrixApplication::MatrixApplication(int fps, std::string setServerAddress, std::string setServerPort) :
         mainThread(),
@@ -10,7 +11,8 @@ MatrixApplication::MatrixApplication(int fps, std::string setServerAddress, std:
         serverAddress(setServerAddress),
         serverPort(setServerPort) {
     boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::debug);
-    srand(time(NULL));
+    std::random_device rd;
+    srand(rd());
     setFps(fps);
     appId = 0;
     appState = AppState::starting;
@@ -75,15 +77,18 @@ void MatrixApplication::internalLoop() {
             running = loop();
             renderToScreens();
         }
+        if (appState == AppState::killed) {
+            running = false;
+        }
         checkConnection();
-//        auto sleepTime = (1000000 / fps) - (micros() - startTime);
-//        if (sleepTime > 0) {
-//            usleep(sleepTime);
-//        } else {
-////            BOOST_LOG_TRIVIAL(warning) << "[Application] FPS drop, load: " << load;
-//        }
-//        load = 1.0f - ((float) sleepTime / (1000000.0f / (float) fps));
-        BOOST_LOG_TRIVIAL(warning) << "[Application] rendertime: " << micros()-startTime << " us";
+        auto sleepTime = (1000000 / fps) - (micros() - startTime);
+        if (sleepTime > 0) {
+            usleep(sleepTime);
+        } else {
+//            BOOST_LOG_TRIVIAL(warning) << "[Application] FPS drop, load: " << load;
+        }
+        load = 1.0f - ((float) sleepTime / (1000000.0f / (float) fps));
+//        BOOST_LOG_TRIVIAL(warning) << "[Application] rendertime: " << micros()-startTime << " us";
     }
 }
 
@@ -126,7 +131,7 @@ MatrixApplication::handleRequest(std::shared_ptr<UniversalConnection> connection
             response->set_appid(appId);
             if (pause()){
                 response->set_status(matrixserver::success);
-                std::cout << "app Paused" << std::endl;
+                BOOST_LOG_TRIVIAL(debug)  << "app Paused";
             }
             else
                 response->set_status(matrixserver::error);
@@ -161,6 +166,7 @@ MatrixApplication::handleRequest(std::shared_ptr<UniversalConnection> connection
             response->set_appid(appId);
             response->set_status(matrixserver::success);
             connection->sendMessage(response);
+            BOOST_LOG_TRIVIAL(debug)  << "app killed";
             stop();
         }
             break;
@@ -214,11 +220,13 @@ bool MatrixApplication::resume() {
 
 void MatrixApplication::stop() {
     if (mainThread != NULL) {
+        appState = AppState::killed;
         mainThread->interrupt();
         mainThread->join();
         mainThread = NULL;
     }
-    appState = AppState::killed;
+    BOOST_LOG_TRIVIAL(debug)  << "app stop successfull";
+    exit(0);
 }
 
 long MatrixApplication::micros() {
