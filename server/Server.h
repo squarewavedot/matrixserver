@@ -12,6 +12,7 @@
 #include <TcpServer.h>
 #include <UnixSocketServer.h>
 #include <IpcServer.h>
+#include <Joystick.h>
 
 class Server {
 public:
@@ -37,10 +38,11 @@ private:
     boost::asio::io_service ioContext;
     boost::thread *ioThread;
     TcpServer tcpServer;
-    UnixSocketServer unixServer;
+//    UnixSocketServer unixServer;
     IpcServer ipcServer;
     matrixserver::ServerConfig & serverConfig;
     std::vector<std::shared_ptr<UniversalConnection>> connections;
+    std::vector<Joystick *> joysticks;
 };
 
 

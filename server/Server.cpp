@@ -5,15 +5,19 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
 #include <sys/time.h>
+#include <random>
+#include <chrono>
 
 #include "Server.h"
 
-#include <chrono>
+std::string defaultApp("/home/pi/matrixserver/cmake-build-release-raspberrypi/exampleApplications/MainMenu/MainMenu 1>/dev/null 2>/dev/null &");
+bool defaultAppStarted = false;
 
 App * Server::getAppByID(int searchID){
-    for(auto app : apps){
-        if(app.getAppId() == searchID)
-            return & app;
+    for(unsigned int i = 0; i < apps.size(); i++){
+        if(apps[i].getAppId() == searchID){
+            return & apps[i];
+        }
     }
     return nullptr;
 }
@@ -22,15 +26,21 @@ Server::Server(std::shared_ptr<IRenderer> setRenderer, matrixserver::ServerConfi
         ioContext(),
         serverConfig(setServerConfig),
         tcpServer(ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(setServerConfig.serverconnection().serverport()))),
-        unixServer(ioContext, boost::asio::local::stream_protocol::endpoint("/tmp/matrixserver.sock")),
+//        unixServer(ioContext, boost::asio::local::stream_protocol::endpoint("/tmp/matrixserver.sock")),
         ipcServer("matrixserver"){
     boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::debug);
     renderers.push_back(setRenderer);
     tcpServer.setAcceptCallback(std::bind(&Server::newConnectionCallback, this, std::placeholders::_1));
-    unixServer.setAcceptCallback(std::bind(&Server::newConnectionCallback, this, std::placeholders::_1));
+//    unixServer.setAcceptCallback(std::bind(&Server::newConnectionCallback, this, std::placeholders::_1));
     ipcServer.setAcceptCallback(std::bind(&Server::newConnectionCallback, this, std::placeholders::_1));
     ioThread = new boost::thread([this]() { this->ioContext.run(); });
-    srand(time(NULL));
+    std::random_device rd;
+    srand(rd());
+
+    joysticks.push_back(new Joystick(0));
+    joysticks.push_back(new Joystick(1));
+    joysticks.push_back(new Joystick(2));
+    joysticks.push_back(new Joystick(3));
 }
 
 void Server::newConnectionCallback(std::shared_ptr<UniversalConnection> connection) {
@@ -80,13 +90,13 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
                     response->set_status(matrixserver::success);
                     connection->sendMessage(response);
                     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-                    std::cout << usTotal.count() << " us" << std::endl; // ~ 15ms
+                    BOOST_LOG_TRIVIAL(trace) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
                 }
             }else{
                 //send app to pause
-                std::cout << "send app " << message->appid() << " to pause" << std::endl;
+                BOOST_LOG_TRIVIAL(debug) << "[Server] send app " << message->appid() << " to pause";
                 auto msg = std::make_shared<matrixserver::MatrixServerMessage>();
-                msg->set_messagetype(matrixserver::appPause);
+                msg->set_messagetype(matrixserver::appKill);
                 connection->sendMessage(msg);
             }
             break;
@@ -94,12 +104,42 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
         case matrixserver::appPause:
         case matrixserver::appResume:
         case matrixserver::appKill:
+            BOOST_LOG_TRIVIAL(debug) << "[Server] appkill " << message->appid() << " successfull";
+            apps.erase(std::remove_if(apps.begin(), apps.end(), [message](App a) {
+                if(a.getAppId() == message->appid()){
+                    BOOST_LOG_TRIVIAL(debug) << "[Server] App " << message->appid() << " deleted";
+                    return true;
+                }else{
+                    return false;
+                }
+            }), apps.end());
         default:
             break;
     }
 }
 
 bool Server::tick() {
+    for (auto joystick : joysticks) {
+        if (joystick->getButtonPress(11)) {
+            if (apps.size() > 0) {
+                BOOST_LOG_TRIVIAL(debug) << "kill current app" << std::endl;
+                auto msg = std::make_shared<matrixserver::MatrixServerMessage>();
+                msg->set_messagetype(matrixserver::appKill);
+                apps.back().sendMsg(msg);
+            }
+        }
+        joystick->clearAllButtonPresses();
+    }
+
+    if (apps.size() == 0 && !defaultAppStarted) {
+        BOOST_LOG_TRIVIAL(debug) << "starting default app" << std::endl;
+        system(defaultApp.data());
+        defaultAppStarted = true;
+    }
+    if (apps.size() > 0) {
+        defaultAppStarted = false;
+    }
+
     apps.erase(std::remove_if(apps.begin(), apps.end(), [](App a) {
         bool returnVal = a.getConnection()->isDead();
         if(returnVal)
