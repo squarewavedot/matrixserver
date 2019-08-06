@@ -13,7 +13,7 @@
 const char *spiDevice = "/dev/spidev0.0";
 uint8_t spiMode = 0;
 uint8_t spiBits = 8;
-uint32_t spiSpeed = 40000000;
+uint32_t spiSpeed = 35000000;
 uint16_t spiDelay = 1;
 int spiDevFilehandle;
 
@@ -198,17 +198,17 @@ bool FPGARendererRPISPI::initSpi() const {
 }
 
 void FPGARendererRPISPI::setScreenData(int screenId, Color *screenData) {
-    if(!screenDataMutex.try_lock())
-        return;
+//    if(!screenDataMutex.try_lock())
+//        return;
     if (screenId < screens.size()) {
         screens.at(screenId)->setScreenData(screenData);
     }
-    screenDataMutex.unlock();
+//    screenDataMutex.unlock();
 }
 
 void FPGARendererRPISPI::render() {
-    if(!screenDataMutex.try_lock())
-        return;
+//    if(!screenDataMutex.try_lock())
+//        return;
 
     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 
@@ -317,6 +317,8 @@ void FPGARendererRPISPI::render() {
     }
 #endif
 
+    screenDataMutex.unlock();
+
     /* Swap Frame */
     cmd_buf[0] = 0x04;
     cmd_buf[1] = 0x00;
@@ -341,7 +343,6 @@ void FPGARendererRPISPI::render() {
 
     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
 //    std::cout << "render: " << usTotal.count() << " us" << std::endl;
-    screenDataMutex.unlock();
 }
 
 void FPGARendererRPISPI::setGlobalBrightness(int brightness) {
