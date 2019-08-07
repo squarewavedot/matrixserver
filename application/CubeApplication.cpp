@@ -3,10 +3,12 @@
 #include <iostream>
 #include <iomanip>
 
-
 CubeApplication::CubeApplication(int fps, std::string setServerAddress, std::string setServerPort) :
+#ifdef MATRIXAPPLICATION_STANDALONE
         MatrixApplicationStandalone(fps, setServerAddress, setServerPort),
-//        MatrixApplication(fps, setServerAddress, setServerPort),
+#else
+        MatrixApplication(fps, setServerAddress, setServerPort),
+#endif
         virtualSize_(VIRTUALCUBESIZE),
         virtualSizeAll_(VIRTUALCUBESIZE * VIRTUALCUBESIZE * VIRTUALCUBESIZE){
     clear();
