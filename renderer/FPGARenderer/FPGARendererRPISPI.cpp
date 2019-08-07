@@ -247,8 +247,11 @@ void FPGARendererRPISPI::render() {
                         default:
                             break;
                     }
+                    if(globalBrightness < 100){
+                        tmpColor *= ((float)globalBrightness / 100.0f);
+                    }
                     pixelP = (uint16_t *)(cmd_buf + i + screen->getOffsetX() * bytesPerScreen + x * bitDepthInBytes);
-                    *pixelP = tmpColor.r() >> 3 << 11 | tmpColor.g() >> 2 << 6 | tmpColor.b() >> 3;
+                    *pixelP = tmpColor.r() >> 3 << 11 | tmpColor.g() >> 3 << 6 | tmpColor.b() >> 3;
                 }
             }
         }
