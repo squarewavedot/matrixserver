@@ -13,7 +13,7 @@ set(SOURCE_FILES
         Joystick.cpp
         Joystick.h
         Mpu6050.cpp
-        Mpu6050.h)
+        Mpu6050.h ADS1000.cpp ADS1000.h)
 
 add_library(application SHARED ${SOURCE_FILES} MatrixApplication.cpp)
 target_link_libraries(application common renderer FPGARenderer)

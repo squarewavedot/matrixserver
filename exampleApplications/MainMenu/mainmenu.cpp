@@ -4,26 +4,12 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
-
 #include <cstdio>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <array>
-
-std::string exec(const char* cmd) {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
-}
 
 MainMenu::MainMenu() : CubeApplication(40) {
     searchDirectory = "/home/pi/APPS";
@@ -40,7 +26,6 @@ bool MainMenu::loop(){
     static int selectedExec = executables.size()/2;
     static float lastAxisOne = 0;
     static int loopcount = 0;
-    static std::string battValue;
     clear();
 
     float axisOne = joysticks[0]->getAxis(1);
@@ -65,22 +50,26 @@ bool MainMenu::loop(){
     }
 
     joysticks[0]->clearAllButtonPresses();
+    joysticks[1]->clearAllButtonPresses();
+    joysticks[2]->clearAllButtonPresses();
+    joysticks[3]->clearAllButtonPresses();
+
+    auto battValue = adcBattery.getVoltage();
 
     for(uint i = 0; i < executables.size(); i++){
         Color textColor = Color::white();
         if(i == (uint)selectedExec)
             textColor = Color::green();
-        for(uint screenCounter = 0; screenCounter < 4; screenCounter++)
+        for(uint screenCounter = 0; screenCounter < 4; screenCounter++){
             drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::centered, 29+((i-selectedExec)*7)), textColor, executables.at(i).filename());
+            drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::right, 58), Color::blue(), std::to_string(battValue).substr(0,5) + " V");
+        }
     }
-
-    if(loopcount%40 == 0)
-        battValue = exec("/home/pi/read_adc_battvoltage.py");
 
     drawText(top, Vector2i(CharacterBitmaps::centered, 22), Color::white(), "DOT");
     drawText(top, Vector2i(CharacterBitmaps::centered, 30), Color::white(), "THE");
     drawText(top, Vector2i(CharacterBitmaps::centered, 38), Color::white(), "LEDCUBE");
-    drawText(top, Vector2i(CharacterBitmaps::right, 58), Color::blue(), battValue.substr(0,5) + " V");
+
     //drawText(top, Vector2i(CharacterBitmaps::centered, 58), Color::green()+Color::blue(), "squarewave.io");
     render();
 

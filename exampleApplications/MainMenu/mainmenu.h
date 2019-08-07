@@ -4,6 +4,8 @@
 #include "CubeApplication.h"
 
 #include "Joystick.h"
+#include "ADS1000.h"
+
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 
@@ -15,6 +17,7 @@ private:
     std::vector<Joystick *> joysticks;
     std::vector<fs::path> executables;
     std::string searchDirectory;
+    ADS1000 adcBattery;
 };
 
 #endif //SNAKE_PIXELFLOW_H
