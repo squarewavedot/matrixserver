@@ -24,8 +24,8 @@ other stuff:
 #define VIRTUALCUBECENTER 33 //VIRTUALCUBESIZE / 2
 
 #include "Color.h"
-#include "MatrixApplication.h"
-//#include "MatrixApplicationStandalone.h"
+//#include "MatrixApplication.h"
+#include "MatrixApplicationStandalone.h"
 #include "Font6px.h"
 
 #include <boost/multi_array.hpp>
@@ -53,7 +53,7 @@ enum ScreenNumber { front, right, back, left, top, bottom, anyScreen };
 enum EdgeNumber { frontRight, rightBack, backLeft, leftFront, topFront, topRight, topBack, topLeft, bottomFront, bottomRight, bottomBack, bottomLeft, anyEdge };
 enum CornerNumber { frontRightTop, rightBackTop, backLeftTop, leftFrontTop, frontRightBottom, rightBackBottom, backLeftBottom, leftFrontBottom, anyCorner };
 
-class CubeApplication : public MatrixApplication{
+class CubeApplication : public MatrixApplicationStandalone{
 public:
     CubeApplication(
             int fps = DEFAULTFPS,

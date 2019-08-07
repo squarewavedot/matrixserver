@@ -5,7 +5,8 @@
 
 
 CubeApplication::CubeApplication(int fps, std::string setServerAddress, std::string setServerPort) :
-        MatrixApplication(fps, setServerAddress, setServerPort),
+        MatrixApplicationStandalone(fps, setServerAddress, setServerPort),
+//        MatrixApplication(fps, setServerAddress, setServerPort),
         virtualSize_(VIRTUALCUBESIZE),
         virtualSizeAll_(VIRTUALCUBESIZE * VIRTUALCUBESIZE * VIRTUALCUBESIZE){
     clear();

@@ -121,8 +121,8 @@ MatrixApplicationStandalone::MatrixApplicationStandalone(int fps, std::string se
 }
 
 void MatrixApplicationStandalone::renderToScreens() {
-//    renderSyncMutex.lock();
-//    renderSyncMutex.unlock();
+    renderSyncMutex.lock();
+    renderSyncMutex.unlock();
     renderer->render();
 //    std::thread([this](){renderer->render();}).detach();
 }
@@ -130,15 +130,15 @@ void MatrixApplicationStandalone::renderToScreens() {
 void MatrixApplicationStandalone::renderLoop() {
     bool running = true;
     while (running) {
-//        renderSyncMutex.lock();
+        renderSyncMutex.lock();
         while(newFrame == false)
             usleep(100);
         for (auto screen : screens) {
             renderer->setScreenData(screen->getScreenId(), screen->getScreenDataRaw());
         }
         newFrame = false;
-//        renderSyncMutex.unlock();
-//        auto startTime = micros();
+        renderSyncMutex.unlock();
+        auto startTime = micros();
         renderToScreens();
 //      BOOST_LOG_TRIVIAL(warning) << "[Application] rendertime: " << micros()-startTime << " us";
     }
