@@ -128,8 +128,22 @@ bool Server::tick() {
                 apps.back().sendMsg(msg);
             }
         }
+
+        //rudementary brightness control test
+        if (joystick->getButtonPress(1)) {
+            for(auto renderer : renderers){
+                int currentBrightness = renderer->getGlobalBrightness();
+                if(currentBrightness > 10)
+                    renderer->setGlobalBrightness(currentBrightness-10);
+                if(currentBrightness <= 10)
+                    renderer->setGlobalBrightness(100);
+            }
+        }
+
         joystick->clearAllButtonPresses();
     }
+
+
 
     if (apps.size() == 0 && !defaultAppStarted) {
         BOOST_LOG_TRIVIAL(debug) << "starting default app" << std::endl;
