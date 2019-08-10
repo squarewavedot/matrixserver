@@ -210,6 +210,15 @@ void FPGARendererRPISPI::render() {
 //    if(!screenDataMutex.try_lock())
 //        return;
 
+    /* Doing VSync */
+    do {
+        cmd_buf[0] = 0x00;
+        cmd_buf[1] = 0x00;
+        SpiWriteRead(cmd_buf, 2);
+        usleep(100);
+//        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
+    } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
+
     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 
 #ifdef TWOBYSIX
@@ -327,14 +336,7 @@ void FPGARendererRPISPI::render() {
     cmd_buf[1] = 0x00;
     SpiWriteQueueAdd(cmd_buf, 2);
 
-    /* Doing VSync */
-    do {
-        cmd_buf[0] = 0x00;
-        cmd_buf[1] = 0x00;
-        SpiWriteRead(cmd_buf, 2);
-        usleep(100);
-//        printf("%d\n", cmd_buf[0] | cmd_buf[1]);
-    } while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
+
 
 
 

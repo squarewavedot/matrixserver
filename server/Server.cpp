@@ -90,7 +90,7 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
                     response->set_status(matrixserver::success);
                     connection->sendMessage(response);
                     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-                    BOOST_LOG_TRIVIAL(trace) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
+                    BOOST_LOG_TRIVIAL(debug) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
                 }
             }else{
                 //send app to pause
