@@ -24,3 +24,20 @@ target_include_directories(common PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(common PUBLIC ${PROTOBUF_INCLUDE_DIRS})
 
 target_compile_definitions(common PUBLIC PUBLIC BOOST_LOG_DYN_LINK)
+
+set(HEADER_FILES
+        Color.h
+        Screen.h
+        TcpServer.h
+        TcpClient.h
+        Cobs.h
+        SocketConnection.h
+        UnixSocketServer.h
+        UnixSocketClient.h
+        UniversalConnection.h
+        IpcServer.h
+        IpcConnection.h
+        ${PROTO_HDRS}
+        )
+
+install(FILES ${HEADER_FILES} DESTINATION "/usr/local/include")

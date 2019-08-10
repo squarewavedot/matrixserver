@@ -80,7 +80,8 @@ bool Joystick::sample(Joystick::Event * event)
 
 bool Joystick::isFound()
 {
-    return _fd >= 0;
+    struct stat buffer;
+    return (stat (devicePath_.c_str(), &buffer) == 0);
 }
 
 void Joystick::refresh()

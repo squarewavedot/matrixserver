@@ -83,7 +83,7 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
                         renderer->setScreenData(screenInfo.screenid(), (Color *)screenInfo.framedata().data()); //TODO: remove C style cast
                     }
                     auto usStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
-    //              std::thread([renderer](){renderer->render();}).detach();
+//                  std::thread([renderer](){renderer->render();}).detach();
                     renderer->render();
                     auto response = std::make_shared<matrixserver::MatrixServerMessage>();
                     response->set_messagetype(matrixserver::setScreenFrame);
