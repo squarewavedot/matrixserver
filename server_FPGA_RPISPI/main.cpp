@@ -73,12 +73,12 @@ int main(int argc, char **argv) {
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_front :
                 screen->setOffsetX(1);
                 screen->setOffsetY(1);
-                screen->setRotation(Rotation::rot180);
+                screen->setRotation(Rotation::rot0);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_right :
-                screen->setOffsetX(0);
+                screen->setOffsetX(2);
                 screen->setOffsetY(1);
-                screen->setRotation(Rotation::rot180);
+                screen->setRotation(Rotation::rot0);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_back :
                 screen->setOffsetX(1);
@@ -86,9 +86,9 @@ int main(int argc, char **argv) {
                 screen->setRotation(Rotation::rot90);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_left :
-                screen->setOffsetX(2);
+                screen->setOffsetX(0);
                 screen->setOffsetY(1);
-                screen->setRotation(Rotation::rot180);
+                screen->setRotation(Rotation::rot0);
                 break;
             case matrixserver::ScreenInfo_ScreenOrientation::ScreenInfo_ScreenOrientation_top :
                 screen->setOffsetX(0);
