@@ -1,7 +1,6 @@
 #ifndef MATRIXSERVER_CUBEAPPLICATION_H
 #define MATRIXSERVER_CUBEAPPLICATION_H
 
-
 /*
 TODO:
 orthogonal (on screen) drawing functions:
@@ -23,14 +22,15 @@ other stuff:
 #define VIRTUALCUBEMAXINDEX 65 //VIRTUALCUBESIZE - 1
 #define VIRTUALCUBECENTER 33 //VIRTUALCUBESIZE / 2
 
-#include "Color.h"
-#include "Font6px.h"
-
 #ifdef MATRIXAPPLICATION_STANDALONE
 #include "MatrixApplicationStandalone.h"
 #else
 #include "MatrixApplication.h"
 #endif
+
+#include "Color.h"
+#include "Font6px.h"
+#include "Image.h"
 
 #include <boost/multi_array.hpp>
 #include <unistd.h>
@@ -83,7 +83,7 @@ public:
     void drawLine3D(Vector3i start, Vector3i end, Color col);
     void drawText(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, std::string text);
     void drawBitmap1bpp(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, Bitmap1bpp bitmap);
-//    void drawImage(ScreenNumber screenNr, Vector2i topLeftPoint, Magick::Image image);
+    void drawImage(ScreenNumber screenNr, Vector2i topLeftPoint, Image &image, Vector2i imageStartPoint);
     bool isOnSurface(Vector3i point);
     ScreenNumber getScreenNumber(Vector3i point);
     bool isOnEdge(Vector3i point);

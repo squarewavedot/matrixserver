@@ -7,7 +7,7 @@ planar screen orientations, as well as other complex screen orientations.
 # Dependencies
 
 on raspbian and ubuntu:
-`sudo apt install git libeigen3-dev cmake wiringpi libboost-all-dev libasound2-dev libprotobuf-dev protobuf-compiler`
+`sudo apt install git libeigen3-dev cmake wiringpi libboost-all-dev libasound2-dev libprotobuf-dev protobuf-compiler libimlib2-dev`
 
 # Building
 

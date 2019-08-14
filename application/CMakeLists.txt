@@ -13,18 +13,19 @@ set(SOURCE_FILES
         Joystick.cpp
         Joystick.h
         Mpu6050.cpp
-        Mpu6050.h ADS1000.cpp ADS1000.h)
+        Mpu6050.h ADS1000.cpp ADS1000.h
+        Image.cpp)
 
 add_library(application SHARED ${SOURCE_FILES} MatrixApplication.cpp)
 target_link_libraries(application common renderer FPGARenderer)
-target_link_libraries(application ${Boost_LIBRARIES} rt wiringPi)
+target_link_libraries(application ${Boost_LIBRARIES} rt wiringPi Imlib2)
 target_include_directories(application PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
 
 target_compile_definitions(application PUBLIC BOOST_LOG_DYN_LINK)
 
 add_library(applicationstandalone SHARED ${SOURCE_FILES} MatrixApplicationStandalone.cpp)
 target_link_libraries(applicationstandalone common renderer FPGARenderer)
-target_link_libraries(applicationstandalone ${Boost_LIBRARIES} rt wiringPi)
+target_link_libraries(applicationstandalone ${Boost_LIBRARIES} rt wiringPi Imlib2)
 target_include_directories(applicationstandalone PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
 
 target_compile_definitions(applicationstandalone PUBLIC BOOST_LOG_DYN_LINK)
