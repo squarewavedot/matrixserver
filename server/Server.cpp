@@ -10,7 +10,7 @@
 
 #include "Server.h"
 
-std::string defaultApp("/home/pi/matrixserver/cmake-build-release-raspberrypi/exampleApplications/MainMenu/MainMenu 1>/dev/null 2>/dev/null &");
+std::string defaultApp("/home/pi/MainMenu 1>/dev/null 2>/dev/null &");
 bool defaultAppStarted = false;
 
 App * Server::getAppByID(int searchID){

@@ -16,3 +16,10 @@ set(MAINLIBS
 add_executable(MainMenu ${MAINSRC})
 target_link_libraries(MainMenu application ${MAINLIBS})
 
+
+install(TARGETS MainMenu
+        RUNTIME
+        DESTINATION /home/pi/
+        COMPONENT application
+        )
+
