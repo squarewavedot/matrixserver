@@ -4,12 +4,17 @@
 #include <iterator>
 #include <cmath>
 
+
+#include <iostream>
+#include <fstream>
+
 BreakoutGame::BreakoutGame() : CubeApplication(40){
   reset();
+  updateHighScoreFromToFile();
 }
 
 void BreakoutGame::reset(int gameDuration){
-  gameState_ = ingame;
+  gameState_ = pregame;
   remainingSeconds_ = gameDuration;
   players_.clear();
   balls_.clear();
@@ -156,6 +161,7 @@ bool BreakoutGame::loop(){
   static long loopcount = 1;
   static int postgameCounter = 0;
   static int scrNrCounter = 0;
+  static bool isHighScore = false;
 
   switch(gameState_){
     case pregame:
@@ -170,6 +176,7 @@ bool BreakoutGame::loop(){
         drawText((ScreenNumber)i, Vector2i(CharacterBitmaps::centered, 20), Color::white(), playtext);
         drawText((ScreenNumber)i, Vector2i(CharacterBitmaps::centered, 30), Color::white()*0.5, rbutton);
         drawText((ScreenNumber)i, Vector2i(CharacterBitmaps::centered, 36), Color::white()*0.5, bbutton);
+        drawText((ScreenNumber)i, Vector2i(CharacterBitmaps::right, 58), Color::white()*0.5, std::to_string(currentHighScore));
       }
       for(auto joystick : joysticks_){
         if(joystick->getButtonPress(0)){
@@ -238,10 +245,19 @@ bool BreakoutGame::loop(){
         std::string topstring = "PLAYER " + std::to_string(getLeadingPlayer()->getId()) + " WON";
         drawText(top, Vector2i(CharacterBitmaps::centered,CharacterBitmaps::centered), getLeadingPlayer()->color(), topstring);
       }
+      if(loopcount/2%2 == 0){
+          if (updateHighScoreFromToFile(getLeadingPlayer()->score())) {
+              isHighScore = true;
+          }
+          if(isHighScore)
+              drawText(top, Vector2i(CharacterBitmaps::centered,20), Color::white(), "NEW HIGHSCORE");
+      }
       if(loopcount%(getFps()/4) == 0)
         postgameCounter--;
-      if(postgameCounter < 0)
-        reset();
+      if(postgameCounter < 0){
+          reset();
+          isHighScore = false;
+      }
     break;
   }
 
@@ -250,6 +266,38 @@ bool BreakoutGame::loop(){
   render();
   loopcount++;
   return true;
+}
+
+bool BreakoutGame::updateHighScoreFromToFile(int score, std::string filename) {
+    bool returnValue = false;
+    std::ifstream configFileReadStream(filename);
+
+    std::fstream highScoreFile;
+    highScoreFile.open(filename.data(), std::fstream::binary | std::fstream::in);
+    if (highScoreFile) {
+        highScoreFile >> currentHighScore;
+        std::cout << "file open successful, highscore: " << currentHighScore << std::endl;
+    } else {
+        //create file
+        highScoreFile.open(filename.data(),
+                           std::fstream::binary | std::fstream::in | std::fstream::out | std::fstream::trunc);
+        highScoreFile << 0;
+        std::cout << "file created successful" << std::endl;
+    }
+
+    if (score > currentHighScore) {
+        std::cout << "NEW HIGHSCORE: " << score << std::endl;
+        currentHighScore = score;
+        returnValue = true;
+
+        highScoreFile.close();
+        highScoreFile.open(filename.data(),
+                           std::fstream::binary | std::fstream::in | std::fstream::out | std::fstream::trunc);
+        highScoreFile << currentHighScore;
+    }
+
+    highScoreFile.close();
+    return returnValue;
 }
 
 bool BreakoutGame::isBlockAtPoint(Vector3f point){

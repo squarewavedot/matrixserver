@@ -31,8 +31,8 @@ target_include_directories(applicationstandalone PUBLIC ${CMAKE_CURRENT_SOURCE_D
 target_compile_definitions(applicationstandalone PUBLIC BOOST_LOG_DYN_LINK)
 target_compile_definitions(applicationstandalone PUBLIC MATRIXAPPLICATION_STANDALONE)
 
-set_target_properties(application PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;MatrixApplication.h")
-set_target_properties(applicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;MatrixApplicationStandalone.h")
+set_target_properties(application PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplication.h")
+set_target_properties(applicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplicationStandalone.h")
 
 install(TARGETS application
         LIBRARY
