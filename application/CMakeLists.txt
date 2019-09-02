@@ -10,44 +10,47 @@ set(CMAKE_CXX_FLAGS "-fPIC")
 
 set(SOURCE_FILES
         CubeApplication.cpp
-        Joystick.cpp
-        Joystick.h
         Mpu6050.cpp
         Mpu6050.h ADS1000.cpp ADS1000.h
         Image.cpp)
 
-add_library(application SHARED ${SOURCE_FILES} MatrixApplication.cpp)
-target_link_libraries(application common renderer FPGARenderer)
-target_link_libraries(application ${Boost_LIBRARIES} rt wiringPi Imlib2)
-target_include_directories(application PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
+add_library(matrixapplication SHARED ${SOURCE_FILES} MatrixApplication.cpp)
+target_link_libraries(matrixapplication common renderer FPGARenderer)
+target_link_libraries(matrixapplication ${Boost_LIBRARIES} rt wiringPi Imlib2)
+target_include_directories(matrixapplication PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/matrixapplication>)
+target_include_directories(matrixapplication PUBLIC $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIRS}> $<INSTALL_INTERFACE:${EIGEN3_INCLUDE_DIRS}>)
 
-target_compile_definitions(application PUBLIC BOOST_LOG_DYN_LINK)
+target_compile_definitions(matrixapplication PUBLIC BOOST_LOG_DYN_LINK)
+set_target_properties(matrixapplication PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplication.h")
 
-add_library(applicationstandalone SHARED ${SOURCE_FILES} MatrixApplicationStandalone.cpp)
-target_link_libraries(applicationstandalone common renderer FPGARenderer)
-target_link_libraries(applicationstandalone ${Boost_LIBRARIES} rt wiringPi Imlib2)
-target_include_directories(applicationstandalone PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
+#
+#add_library(matrixapplicationstandalone SHARED ${SOURCE_FILES} MatrixApplicationStandalone.cpp)
+#target_link_libraries(matrixapplicationstandalone common renderer FPGARenderer)
+#target_link_libraries(matrixapplicationstandalone ${Boost_LIBRARIES} rt wiringPi Imlib2)
+#target_include_directories(matrixapplicationstandalone PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
+#
+#target_compile_definitions(matrixapplicationstandalone PUBLIC BOOST_LOG_DYN_LINK)
+#target_compile_definitions(matrixapplicationstandalone PUBLIC MATRIXAPPLICATION_STANDALONE)
+#
 
-target_compile_definitions(applicationstandalone PUBLIC BOOST_LOG_DYN_LINK)
-target_compile_definitions(applicationstandalone PUBLIC MATRIXAPPLICATION_STANDALONE)
+#set_target_properties(matrixapplicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplicationStandalone.h")
 
-set_target_properties(application PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplication.h")
-set_target_properties(applicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplicationStandalone.h")
-
-install(TARGETS application
+install(TARGETS matrixapplication
+        EXPORT matrixapplication-targets
         LIBRARY
         DESTINATION lib
-        COMPONENT application
+        COMPONENT matrixapplication
         PUBLIC_HEADER
-        DESTINATION include
-        COMPONENT application
+        DESTINATION include/matrixapplication
+        COMPONENT matrixapplication
         )
 
-install(TARGETS applicationstandalone
-        LIBRARY
-        DESTINATION lib
-        COMPONENT applicationstandalone
-        PUBLIC_HEADER
-        DESTINATION include
-        COMPONENT applicationstandalone
-        )
+#install(TARGETS matrixapplicationstandalone
+#        EXPORT matrixapplicationstandalone-targets
+#        LIBRARY
+#        DESTINATION lib
+#        COMPONENT matrixapplicationstandalone
+#        PUBLIC_HEADER
+#        DESTINATION include
+#        COMPONENT matrixapplicationstandalone
+#        )

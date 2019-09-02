@@ -7,14 +7,18 @@ set(SOURCE_FILES
 
 
 add_library(FPGARenderer SHARED ${SOURCE_FILES})
-target_link_libraries(FPGARenderer PRIVATE renderer )#bcm2835 wiringPi pigpio ftdi
-target_include_directories(FPGARenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(FPGARenderer PRIVATE renderer)
+target_include_directories(FPGARenderer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/matrixapplication>)
+
+set_target_properties(FPGARenderer PROPERTIES PUBLIC_HEADER "FPGARendererRPISPI.h")
+
 
 install(TARGETS FPGARenderer
+        EXPORT matrixapplication-targets
         LIBRARY
         DESTINATION lib
         COMPONENT FPGARenderer
         PUBLIC_HEADER
-        DESTINATION include
+        DESTINATION include/matrixapplication
         COMPONENT FPGARenderer
         )

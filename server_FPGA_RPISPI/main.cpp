@@ -4,7 +4,7 @@
 #include <boost/log/trivial.hpp>
 
 #include <Server.h>
-#include <FPGARendererFTDI.h>
+//#include <FPGARendererFTDI.h>
 #include <FPGARendererRPISPI.h>
 #include <TcpServer.h>
 
