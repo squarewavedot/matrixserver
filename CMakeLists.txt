@@ -42,4 +42,18 @@ install(EXPORT matrixapplication-targets
         FILE matrixapplication-config.cmake
         DESTINATION lib/cmake/matrixapplication)
 
-INCLUDE(CPack)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "LEDCube matrixserver dev files")
+set(CPACK_PACKAGE_DESCRIPTION "LEDCube matrixserver & matrixapplication library")
+#set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
+#set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
+
+
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libeigen3-dev,wiringpi,libboost-thread-dev,libboost-log-dev,libboost-system-dev,libboost-regex-dev,libboost-chrono-dev,libboost-date-time-dev,libboost-filesystem-dev,libboost-atomic-dev,libasound2-dev,libprotobuf-dev,protobuf-compiler,libimlib2-dev")
+set(CPACK_PACKAGE_CONTACT "Adrian maintainer@squarewave.io")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr/local/")
+#set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/Debian/postinst")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+include(CPack)
