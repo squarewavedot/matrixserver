@@ -18,6 +18,7 @@ private:
     std::vector<fs::path> executables;
     std::string searchDirectory;
     ADS1000 adcBattery;
+    std::vector<Color> allTheColorsRainbow;
 };
 
 #endif //SNAKE_PIXELFLOW_H
