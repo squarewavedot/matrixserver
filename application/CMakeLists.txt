@@ -33,7 +33,7 @@ set_target_properties(matrixapplication PROPERTIES PUBLIC_HEADER "CubeApplicatio
 #target_compile_definitions(matrixapplicationstandalone PUBLIC MATRIXAPPLICATION_STANDALONE)
 #
 
-#set_target_properties(matrixapplicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Joystick.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplicationStandalone.h")
+#set_target_properties(matrixapplicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplicationStandalone.h")
 
 install(TARGETS matrixapplication
         EXPORT matrixapplication-targets

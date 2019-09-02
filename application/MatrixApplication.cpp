@@ -219,14 +219,15 @@ bool MatrixApplication::resume() {
 }
 
 void MatrixApplication::stop() {
-    if (mainThread != NULL) {
-        appState = AppState::killed;
-        mainThread->interrupt();
-        mainThread->join();
-        mainThread = NULL;
-    }
-    BOOST_LOG_TRIVIAL(debug)  << "app stop successfull";
-    exit(0);
+    exit(0); //exit immediately because the below thread join won't work all the time TODO:fix this!
+//    if (mainThread != NULL) {
+//        appState = AppState::killed;
+//        mainThread->interrupt();
+//        mainThread->join();
+//        mainThread = NULL;
+//    }
+//    BOOST_LOG_TRIVIAL(debug)  << "app stop successfull";
+//    exit(0);
 }
 
 long MatrixApplication::micros() {
