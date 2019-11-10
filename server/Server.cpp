@@ -11,6 +11,14 @@
 #include "Server.h"
 
 std::string defaultApp("/usr/local/bin/MainMenu 1>/dev/null 2>/dev/null &");
+
+std::vector<std::string> appList = {
+        std::string("/home/pi/APPS/genetic &"),
+        std::string("/home/pi/APPS/PixelFlow &"),
+        std::string("/home/pi/APPS/Breakout3D &"),
+};
+int appListCounter = 0;
+
 bool defaultAppStarted = false;
 
 App * Server::getAppByID(int searchID){
@@ -127,6 +135,26 @@ bool Server::tick() {
                 msg->set_messagetype(matrixserver::appKill);
                 apps.back().sendMsg(msg);
             }
+        }
+
+        // Button 6 (left Shoulder)
+        // Button 7 (right Shoulder)
+
+        if (joystick->getButtonPress(7)) {
+            if(appListCounter < appList.size()-1)
+                appListCounter++;
+            else
+                appListCounter = 0;
+            system(appList.at(appListCounter).data());
+        }
+
+
+        if (joystick->getButtonPress(6)) {
+            if(appListCounter > 0)
+                appListCounter--;
+            else
+                appListCounter = appList.size()-1;
+            system(appList.at(appListCounter).data());
         }
 
         //rudementary brightness control test
