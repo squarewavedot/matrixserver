@@ -11,7 +11,7 @@ namespace Imlib2{
 class Image {
 public:
     Image();
-    void loadImage(std::string filepath);
+    bool loadImage(std::string filepath);
     Color at(int col, int row);
 
     int getWidth();
