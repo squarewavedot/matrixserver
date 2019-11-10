@@ -13,9 +13,11 @@
 std::string defaultApp("/usr/local/bin/MainMenu 1>/dev/null 2>/dev/null &");
 
 std::vector<std::string> appList = {
-        std::string("/home/pi/APPS/genetic &"),
-        std::string("/home/pi/APPS/PixelFlow &"),
+        std::string("/home/pi/APPS/Genetic &"),
+        std::string("/home/pi/APPS/PixelFlow3 &"),
         std::string("/home/pi/APPS/Breakout3D &"),
+        std::string("/home/pi/APPS/Picture -s 2 /home/pi/Laufgschrift_2.png"),
+        std::string("/home/pi/APPS/Picture -s 0 /home/pi/Laufgschrift_2.png"),
 };
 int appListCounter = 0;
 
@@ -98,7 +100,7 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
                     response->set_status(matrixserver::success);
                     connection->sendMessage(response);
                     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
-                    BOOST_LOG_TRIVIAL(debug) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
+//                    BOOST_LOG_TRIVIAL(debug) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
                 }
             }else{
                 //send app to pause
@@ -139,22 +141,26 @@ bool Server::tick() {
 
         // Button 6 (left Shoulder)
         // Button 7 (right Shoulder)
+        bool newAppList = false;
 
         if (joystick->getButtonPress(7)) {
-            if(appListCounter < appList.size()-1)
-                appListCounter++;
-            else
-                appListCounter = 0;
-            system(appList.at(appListCounter).data());
+            appListCounter++;
+            newAppList = true;
         }
 
-
         if (joystick->getButtonPress(6)) {
-            if(appListCounter > 0)
-                appListCounter--;
-            else
-                appListCounter = appList.size()-1;
+            appListCounter--;
+            newAppList = true;
+        }
+
+        if(appListCounter < 0)
+            appListCounter = appList.size();
+        if(appListCounter > appList.size())
+            appListCounter = 0;
+
+        if(newAppList){
             system(appList.at(appListCounter).data());
+            std::cout << appList.at(appListCounter) << std::endl;
         }
 
         //rudementary brightness control test
