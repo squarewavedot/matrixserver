@@ -13,13 +13,14 @@
 std::string defaultApp("/usr/local/bin/MainMenu 1>/dev/null 2>/dev/null &");
 
 std::vector<std::string> appList = {
+        std::string("/home/pi/APPS/Blackout3D &"),
         std::string("/home/pi/APPS/Genetic &"),
-        std::string("/home/pi/APPS/PixelFlow3 &"),
-        std::string("/home/pi/APPS/Breakout3D &"),
-        std::string("/home/pi/APPS/Picture -s 2 /home/pi/Laufgschrift_2.png"),
-        std::string("/home/pi/APPS/Picture -s 0 /home/pi/Laufgschrift_2.png"),
+        std::string("/home/pi/APPS/PixelFlow &"),
+        std::string("/home/pi/PRESIAPPS/Breakout3D &"),
+        std::string("/home/pi/APPS/Picture -s 2 /home/pi/Laufgschrift_2.png &"),
+        std::string("/home/pi/APPS/Picture -s 0 /home/pi/Laufgschrift_2.png &"),
 };
-int appListCounter = 0;
+int appListCounter = 5;
 
 bool defaultAppStarted = false;
 
@@ -154,8 +155,8 @@ bool Server::tick() {
         }
 
         if(appListCounter < 0)
-            appListCounter = appList.size();
-        if(appListCounter > appList.size())
+            appListCounter = appList.size()-1;
+        if(appListCounter > appList.size()-1)
             appListCounter = 0;
 
         if(newAppList){
