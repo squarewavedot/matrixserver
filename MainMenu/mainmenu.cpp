@@ -10,6 +10,11 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <unistd.h>
+
+size_t hostnameLen = 20;
+char hostname[20];
+
 
 Color ColorFade(Color col1, Color col2, float progress){
     Color returnColor;
@@ -36,6 +41,9 @@ MainMenu::MainMenu() : CubeApplication(40) {
     allTheColorsRainbow.push_back(Color(0,255,255));
     allTheColorsRainbow.push_back(Color(0,0,255));
     allTheColorsRainbow.push_back(Color(255,0,255));
+
+    gethostname(hostname, hostnameLen);
+    std::cout << hostname << std::endl;
 }
 
 
@@ -150,20 +158,26 @@ switch(menuColorMode) {
    // std::cout << "countRainbow: " << countRainbow << " colorFadeNumber: " << colorFadeNumber << std::endl;
 
     for(uint i = 0; i < executables.size(); i++){
+        int yPos = 29+((i-selectedExec)*7);
         Color textColor = colNormalText;
         if(i == (uint)selectedExec)
             textColor = colSelectedText;
         for(uint screenCounter = 0; screenCounter < 4; screenCounter++){
-            if ((29+((i-selectedExec)*7)<57)){
-                drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::centered, 29+((i-selectedExec)*7)), textColor, executables.at(i).filename());
+            if (yPos < 57 && yPos > 6){
+                drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::centered, yPos), textColor, executables.at(i).filename());
             }
-            drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::right, 58), colVoltageText, std::to_string(battValue).substr(0,5) + " V");
         }
+    }
+
+    for(uint screenCounter = 0; screenCounter < 4; screenCounter++){
+        drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::right, 58), colVoltageText, std::to_string(battValue).substr(0,5) + " V");
+        drawText((ScreenNumber)screenCounter, Vector2i(CharacterBitmaps::left, 1), colVoltageText, hostname);
     }
 
     drawText(top, Vector2i(CharacterBitmaps::centered, 22), colTopText, "DOT");
     drawText(top, Vector2i(CharacterBitmaps::centered, 30), colTopText, "THE");
     drawText(top, Vector2i(CharacterBitmaps::centered, 38), colTopText, "LEDCUBE");
+
 
     //drawText(top, Vector2i(CharacterBitmaps::centered, 58), Color::green()+Color::blue(), "squarewave.io");
     render();
