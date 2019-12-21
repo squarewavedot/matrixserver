@@ -178,7 +178,6 @@ switch(menuColorMode) {
     drawText(top, Vector2i(CharacterBitmaps::centered, 30), colTopText, "THE");
     drawText(top, Vector2i(CharacterBitmaps::centered, 38), colTopText, "LEDCUBE");
 
-
     //drawText(top, Vector2i(CharacterBitmaps::centered, 58), Color::green()+Color::blue(), "squarewave.io");
     render();
 

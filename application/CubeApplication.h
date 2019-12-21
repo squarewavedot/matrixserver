@@ -81,6 +81,8 @@ public:
     void fade(float factor);
     void drawLine3D(int x1, int y1, int z1, const int x2, const int y2, const int z2, Color col);
     void drawLine3D(Vector3i start, Vector3i end, Color col);
+    void drawLine2D(ScreenNumber screenNr, Vector2i start, Vector2i end, Color col);
+    void drawLine2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col);
     void drawText(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, std::string text);
     void drawBitmap1bpp(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, Bitmap1bpp bitmap);
     void drawImage(ScreenNumber screenNr, Vector2i topLeftPoint, Image &image, Vector2i imageStartPoint);

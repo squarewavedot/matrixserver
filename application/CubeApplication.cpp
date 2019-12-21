@@ -187,6 +187,24 @@ void CubeApplication::drawLine3D(int x1, int y1, int z1, const int x2, const int
     drawLine3D(Vector3i(x1, y1, z1), Vector3i(x2, y2, z2), col);
 }
 
+void CubeApplication::drawLine2D(ScreenNumber screenNr, Vector2i start, Vector2i end, Color col){
+    drawLine2D(screenNr, start[0], start[1], end[0], end[1], col);
+}
+
+void CubeApplication::drawLine2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col){
+    int dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
+    int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1;
+    int err = dx+dy, e2; /* error value e_xy */
+
+    while (1) {
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(x0,y0)), col);
+        if (x0==x1 && y0==y1) break;
+        e2 = 2*err;
+        if (e2 > dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
+        if (e2 < dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
+    }
+}
+
 void CubeApplication::drawText(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, std::string text) {
     Vector2i posIterator = topLeftPoint;
     if (topLeftPoint[0] == CharacterBitmaps::centered)
