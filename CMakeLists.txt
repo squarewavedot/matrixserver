@@ -42,6 +42,8 @@ install(EXPORT matrixapplication-targets
         FILE matrixapplication-config.cmake
         DESTINATION lib/cmake/matrixapplication)
 
+install(PROGRAMS Update.sh DESTINATION sbin)
+
 set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "LEDCube matrixserver dev files")
 set(CPACK_PACKAGE_DESCRIPTION "LEDCube matrixserver & matrixapplication library")
@@ -54,7 +56,7 @@ set(CPACK_PACKAGE_CONTACT "Adrian maintainer@squarewave.io")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr/local/")
 #set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/Debian/postinst")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_MINOR "2")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 include(CPack)

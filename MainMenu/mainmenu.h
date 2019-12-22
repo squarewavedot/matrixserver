@@ -21,15 +21,14 @@ private:
 
     std::vector<Joystick *> joysticks;
     std::vector<AppListItem> appList;
+    std::vector<AppListItem> settingsList;
     std::string searchDirectory;
     ADS1000 adcBattery;
 };
 
 class MainMenu::AppListItem {
 public:
-    AppListItem(std::string setName, std::string setExecPath);
-
-    AppListItem(std::string setName, std::string setExecPath, Color setColor);
+    AppListItem(std::string setName, std::string setExecPath, bool setInternal = false, Color setColor = Color::white());
 
     std::string name;
     std::string execPath;
