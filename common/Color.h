@@ -18,6 +18,7 @@ class Color {
     uint8_t r() const;
     uint8_t g() const;
     uint8_t b() const;
+    void fromHSV(float h, float s, float v);
     Color& operator+=(const Color& rhs);
     friend Color operator+(Color lhs,const Color& rhs);
     Color& operator-=(const Color& rhs);
