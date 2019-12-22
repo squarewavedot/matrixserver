@@ -4,6 +4,9 @@ This is a screenserver for the purpose of being used with differently orientated
 It currently has been implemented for the LEDCube project, but it can also be used in simple, 
 planar screen orientations, as well as other complex screen orientations.  
 
+# Install and Update quickfix
+should work: `wget -O - https://raw.githubusercontent.com/squarewavedot/matrixserver/master/Update.sh | bash`
+
 # Dependencies
 
 on raspbian and ubuntu:
