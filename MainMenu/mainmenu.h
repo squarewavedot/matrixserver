@@ -19,6 +19,7 @@ public:
 private:
     class AppListItem;
 
+    JoystickManager joystickmngr;
     std::vector<Joystick *> joysticks;
     std::vector<AppListItem> appList;
     std::vector<AppListItem> settingsList;

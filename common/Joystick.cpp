@@ -95,7 +95,10 @@ void Joystick::refresh()
                     buttonPress_[event.number] = true;
                 button_[event.number] = (bool)event.value;
             }else if (event.isAxis()){
-                axis_[event.number] = (float)event.value / INT16_MAX;
+                auto tempVal = (float)event.value / INT16_MAX;
+                if(axis_[event.number] == 0 && tempVal != 0)
+                    axisPress_[event.number] = tempVal;
+                axis_[event.number] = tempVal;
             }
         }
     }
@@ -154,9 +157,24 @@ float Joystick::getAxis(unsigned int num)
     return 0;
 }
 
+float Joystick::getAxisPress(unsigned int num) {
+    if(num < MAXBUTTONAXISCOUNT){
+        if(axisPress_[num] != 0){
+            auto returnValue = axisPress_[num];
+            axisPress_[num] = 0.0f;
+            return returnValue;
+        }
+    }
+    return 0.0f;
+}
+
+
 void Joystick::clearAllButtonPresses(){
     for(int i = 0; i < MAXBUTTONAXISCOUNT; i++){
         buttonPress_[i] = false;
+    }
+    for(int i = 0; i < MAXBUTTONAXISCOUNT; i++){
+        axisPress_[i] = 0.0f;
     }
 }
 
@@ -166,10 +184,50 @@ Joystick::~Joystick()
     close(_fd);
 }
 
+
 std::ostream& operator<<(std::ostream& os, const Joystick::Event& e)
 {
     os << "type=" << static_cast<int>(e.type)
        << " number=" << static_cast<int>(e.number)
        << " value=" << static_cast<int>(e.value);
     return os;
+}
+
+JoystickManager::JoystickManager(unsigned int maxNum) {
+    for(int i = 0; i<maxNum; i++)
+        joysticks.push_back(new Joystick(i));
+}
+
+std::vector<Joystick *> &JoystickManager::getJoysticks() {
+    return joysticks;
+}
+
+bool JoystickManager::getButtonPress(unsigned int num) {
+    bool returnValue = false;
+    for(auto joystick : joysticks){
+        returnValue = (returnValue || joystick->getButtonPress(num));
+    }
+    return returnValue;
+}
+
+float JoystickManager::getAxis(unsigned int num) {
+    float returnValue = 0;
+    for(auto joystick : joysticks){
+        returnValue += joystick->getAxis(num);
+    }
+    return returnValue;
+}
+
+float JoystickManager::getAxisPress(unsigned int num) {
+    float returnValue = 0;
+    for(auto joystick : joysticks){
+        returnValue += joystick->getAxisPress(num);
+    }
+    return returnValue;
+}
+
+void JoystickManager::clearAllButtonPresses() {
+    for(auto joystick : joysticks){
+        joystick->clearAllButtonPresses();
+    }
 }

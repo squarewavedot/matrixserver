@@ -21,7 +21,7 @@ enum MenuState {
 
 MenuState menuState = applist;
 
-MainMenu::MainMenu() : CubeApplication(40) {
+MainMenu::MainMenu() : CubeApplication(40), joystickmngr(8) {
     searchDirectory = "/home/pi/APPS";
     for (const auto &p : std::experimental::filesystem::directory_iterator(searchDirectory)) {
         //if(p.path().extension() == "cube"){
@@ -32,11 +32,6 @@ MainMenu::MainMenu() : CubeApplication(40) {
     appList.push_back(AppListItem("settings", "settings", true, Color::blue()));
     settingsList.push_back(AppListItem("update", "update", true));
     settingsList.push_back(AppListItem("return", "return", true, Color::blue()));
-
-    joysticks.push_back(new Joystick(0));
-    joysticks.push_back(new Joystick(1));
-    joysticks.push_back(new Joystick(2));
-    joysticks.push_back(new Joystick(3));
 
     gethostname(hostname, hostnameLen);
     menuState = applist;
@@ -63,27 +58,15 @@ bool MainMenu::loop() {
 
     switch (menuState) {
         case applist: {
-            float axisOne = joysticks[0]->getAxis(1);
-            if (axisOne == 0) axisOne = joysticks[1]->getAxis(1);
-            if (axisOne == 0) axisOne = joysticks[2]->getAxis(1);
-            if (axisOne == 0) axisOne = joysticks[3]->getAxis(1);
-
-            if (axisOne != 0 && lastAxisOne == 0) {
-                selectedExec += (int) axisOne;
-            }
+            selectedExec += (int) joystickmngr.getAxisPress(1);
             if (selectedExec < 0) {
                 selectedExec = appList.size() - 1;
             } else {
                 selectedExec %= appList.size();
             }
 
-            lastAxisOne = axisOne;
-            //std::cout << "selectedExec: " << selectedExec << " appList.size(): " << appList.size() << std::endl;
 
-            if (joysticks[0]->getButtonPress(0) ||
-                joysticks[1]->getButtonPress(0) ||
-                joysticks[2]->getButtonPress(0) ||
-                joysticks[3]->getButtonPress(0)) {
+            if (joystickmngr.getButtonPress(0)) {
                 if (appList.at(selectedExec).execPath == "settings") {
                     selectedExec = 0;
                     menuState = settings;
@@ -96,12 +79,6 @@ bool MainMenu::loop() {
                 }
 
             }
-
-
-            joysticks[0]->clearAllButtonPresses();
-            joysticks[1]->clearAllButtonPresses();
-            joysticks[2]->clearAllButtonPresses();
-            joysticks[3]->clearAllButtonPresses();
 
             for (uint i = 0; i < appList.size(); i++) {
                 int yPos = 29 + ((i - selectedExec) * 7);
@@ -123,27 +100,14 @@ bool MainMenu::loop() {
         case settings: {
             drawText(top, Vector2i(CharacterBitmaps::centered, 30), Color::blue(), "Settings");
 
-
-            float axisOne = joysticks[0]->getAxis(1);
-            if (axisOne == 0) axisOne = joysticks[1]->getAxis(1);
-            if (axisOne == 0) axisOne = joysticks[2]->getAxis(1);
-            if (axisOne == 0) axisOne = joysticks[3]->getAxis(1);
-
-            if (axisOne != 0 && lastAxisOne == 0) {
-                selectedExec += (int) axisOne;
-            }
+            selectedExec += (int) joystickmngr.getAxisPress(1);
             if (selectedExec < 0) {
                 selectedExec = settingsList.size() - 1;
             } else {
                 selectedExec %= settingsList.size();
             }
 
-            lastAxisOne = axisOne;
-
-            if (joysticks[0]->getButtonPress(0) ||
-                joysticks[1]->getButtonPress(0) ||
-                joysticks[2]->getButtonPress(0) ||
-                joysticks[3]->getButtonPress(0)) {
+            if (joystickmngr.getButtonPress(0)) {
                 if (settingsList.at(selectedExec).execPath == "return") {
                     menuState = applist;
                     selectedExec = appList.size()-1;
@@ -153,14 +117,7 @@ bool MainMenu::loop() {
                     temp = std::string("nohup ") + temp;
                     system(temp.data());
                 }
-
             }
-
-
-            joysticks[0]->clearAllButtonPresses();
-            joysticks[1]->clearAllButtonPresses();
-            joysticks[2]->clearAllButtonPresses();
-            joysticks[3]->clearAllButtonPresses();
 
             for (uint i = 0; i < settingsList.size(); i++) {
                 int yPos = 29 + ((i - selectedExec) * 7);
@@ -176,10 +133,7 @@ bool MainMenu::loop() {
             }
             break;
         case settingsUpdate:
-            drawText(top, Vector2i(CharacterBitmaps::centered, 22), colSelectedText, "Update");
-            drawText(top, Vector2i(CharacterBitmaps::centered, 30), colSelectedText, "in");
-            drawText(top, Vector2i(CharacterBitmaps::centered, 38), colSelectedText, "progress");
-            for (uint screenCounter = 0; screenCounter < 4; screenCounter++) {
+            for (uint screenCounter = 0; screenCounter < 5; screenCounter++) {
                 drawText((ScreenNumber) screenCounter, Vector2i(CharacterBitmaps::centered, 22), colSelectedText, "Update");
                 drawText((ScreenNumber) screenCounter, Vector2i(CharacterBitmaps::centered, 30), colSelectedText, "in");
                 drawText((ScreenNumber) screenCounter, Vector2i(CharacterBitmaps::centered, 38), colSelectedText, "progress");
@@ -188,6 +142,7 @@ bool MainMenu::loop() {
 
     }
 
+    joystickmngr.clearAllButtonPresses();
 
     render();
     loopcount++;
