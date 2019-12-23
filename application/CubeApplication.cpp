@@ -10,7 +10,7 @@ CubeApplication::CubeApplication(int fps, std::string setServerAddress, std::str
         MatrixApplication(fps, setServerAddress, setServerPort),
 #endif
         virtualSize_(VIRTUALCUBESIZE),
-        virtualSizeAll_(VIRTUALCUBESIZE * VIRTUALCUBESIZE * VIRTUALCUBESIZE){
+        virtualSizeAll_(VIRTUALCUBESIZE * VIRTUALCUBESIZE * VIRTUALCUBESIZE) {
     clear();
     srand(time(NULL));
 }
@@ -94,13 +94,13 @@ bool CubeApplication::isActivePixel3D(int x, int y, int z) {
 
 
 void CubeApplication::fillAll(Color col) {
-    for(auto & screen : screens){
+    for (auto &screen : screens) {
         screen->fill(col);
     }
 }
 
 void CubeApplication::clear() {
-    for(auto & screen : screens){
+    for (auto &screen : screens) {
         screen->clear();
     }
 }
@@ -187,21 +187,27 @@ void CubeApplication::drawLine3D(int x1, int y1, int z1, const int x2, const int
     drawLine3D(Vector3i(x1, y1, z1), Vector3i(x2, y2, z2), col);
 }
 
-void CubeApplication::drawLine2D(ScreenNumber screenNr, Vector2i start, Vector2i end, Color col){
+void CubeApplication::drawLine2D(ScreenNumber screenNr, Vector2i start, Vector2i end, Color col) {
     drawLine2D(screenNr, start[0], start[1], end[0], end[1], col);
 }
 
-void CubeApplication::drawLine2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col){
-    int dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
-    int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1;
-    int err = dx+dy, e2; /* error value e_xy */
+void CubeApplication::drawLine2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col) {
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy, e2; /* error value e_xy */
 
     while (1) {
-        setPixel3D(getPointOnScreen(screenNr, Vector2i(x0,y0)), col);
-        if (x0==x1 && y0==y1) break;
-        e2 = 2*err;
-        if (e2 > dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
-        if (e2 < dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(x0, y0)), col);
+        if (x0 == x1 && y0 == y1) break;
+        e2 = 2 * err;
+        if (e2 > dy) {
+            err += dy;
+            x0 += sx;
+        } /* e_xy+e_x > 0 */
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        } /* e_xy+e_y < 0 */
     }
 }
 
@@ -416,7 +422,7 @@ Vector3f CubeApplication::getPointOnScreen(ScreenNumber screenNr, Vector2f point
 }
 
 void CubeApplication::fade(float factor) {
-    for(auto screen : screens)
+    for (auto screen : screens)
         screen->fade(factor);
 }
 
@@ -430,4 +436,43 @@ void CubeApplication::drawImage(ScreenNumber screenNr, Vector2i topLeftPoint, Im
                        image.at(cols + imageStartPoint[0], rows + imageStartPoint[1]));
         }
     }
+}
+
+void CubeApplication::drawCircle2D(ScreenNumber screenNr, int x0, int y0, int radius, Color col) {
+    int x = radius, y = 0;
+    int radiusError = 1 - x;
+
+    while (y <= x) {
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(x + x0, y + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(y + x0, x + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(-x + x0, y + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(-y + x0, x + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(-x + x0, -y + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(-y + x0, -x + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(x + x0, -y + y0)), col);
+        setPixel3D(getPointOnScreen(screenNr, Vector2i(y + x0, -x + y0)), col);
+        y++;
+        if (radiusError < 0) {
+            radiusError += 2 * y + 1;
+        } else {
+            x--;
+            radiusError += 2 * (y - x + 1);
+        }
+    }
+}
+
+void CubeApplication::drawRect2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col, bool filled, Color fillColor) {
+    if (filled) {
+        for (int i = x0; i < x1; i++) {
+            drawLine2D(screenNr, i, y0, i, y1, fillColor);
+        }
+    }
+    drawLine2D(screenNr, x0, y0, x0, y1, col);
+    drawLine2D(screenNr, x0, y0, x1, y0, col);
+    drawLine2D(screenNr, x1, y1, x0, y1, col);
+    drawLine2D(screenNr, x1, y1, x1, y0, col);
+}
+
+void CubeApplication::drawRectCentered2D(ScreenNumber screenNr, int x0, int y0, int w, int h, Color col, bool filled, Color fillColor) {
+    drawRect2D(screenNr, x0 - (w / 2), y0 - (h / 2), x0 + (w / 2), y0 + (w / 2), col, filled, fillColor);
 }

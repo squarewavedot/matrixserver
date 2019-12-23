@@ -83,6 +83,9 @@ public:
     void drawLine3D(Vector3i start, Vector3i end, Color col);
     void drawLine2D(ScreenNumber screenNr, Vector2i start, Vector2i end, Color col);
     void drawLine2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col);
+    void drawCircle2D(ScreenNumber screenNr, int x0, int y0, int radius, Color col);
+    void drawRect2D(ScreenNumber screenNr, int x0, int y0, int x1, int y1, Color col, bool filled = false, Color fillColor = Color::black());
+    void drawRectCentered2D(ScreenNumber screenNr, int x0, int y0, int w, int h, Color col, bool filled = false, Color fillColor = Color::black());
     void drawText(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, std::string text);
     void drawBitmap1bpp(ScreenNumber screenNr, Vector2i topLeftPoint, Color col, Bitmap1bpp bitmap);
     void drawImage(ScreenNumber screenNr, Vector2i topLeftPoint, Image &image, Vector2i imageStartPoint);
