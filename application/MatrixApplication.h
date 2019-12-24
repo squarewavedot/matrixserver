@@ -47,6 +47,10 @@ public:
 
     void stop();
 
+    int getBrightness();
+
+    void setBrightness(int setBrightness);
+
     virtual bool loop() = 0;
 
 protected:
@@ -68,6 +72,8 @@ private:
     int appId;
     int fps;
     float load;
+
+    int brightness;
     std::string serverAddress;
     std::string serverPort;
     std::shared_ptr<UniversalConnection> connection;

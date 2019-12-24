@@ -42,7 +42,7 @@ private:
     IpcServer ipcServer;
     matrixserver::ServerConfig & serverConfig;
     std::vector<std::shared_ptr<UniversalConnection>> connections;
-    std::vector<Joystick *> joysticks;
+    JoystickManager joystickmngr;
 };
 
 

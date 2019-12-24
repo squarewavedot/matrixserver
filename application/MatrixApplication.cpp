@@ -5,6 +5,8 @@
 #include <boost/log/expressions.hpp>
 #include <random>
 
+bool updateBrightness = false;
+
 MatrixApplication::MatrixApplication(int fps, std::string setServerAddress, std::string setServerPort) :
         mainThread(),
         io_context(),
@@ -64,6 +66,13 @@ void MatrixApplication::renderToScreens() {
         screenData->set_encoding(matrixserver::ScreenData_Encoding_rgb24bbp);
     }
 //    std::cout << "data ready: " << micros() - startTime << "us" << std::endl;
+    if (updateBrightness) {
+        auto *tempServerConfig = new matrixserver::ServerConfig();
+        tempServerConfig->CopyFrom(serverConfig);
+        setScreenMessage->set_allocated_serverconfig(tempServerConfig);
+        updateBrightness = false;
+    }
+
     connection->sendMessage(setScreenMessage);
 //    std::cout << "data sent:  " << micros() - startTime << "us" << std::endl;
 }
@@ -129,11 +138,10 @@ MatrixApplication::handleRequest(std::shared_ptr<UniversalConnection> connection
             auto response = std::make_shared<matrixserver::MatrixServerMessage>();
             response->set_messagetype(matrixserver::appPause);
             response->set_appid(appId);
-            if (pause()){
+            if (pause()) {
                 response->set_status(matrixserver::success);
-                BOOST_LOG_TRIVIAL(debug)  << "app Paused";
-            }
-            else
+                BOOST_LOG_TRIVIAL(debug) << "app Paused";
+            } else
                 response->set_status(matrixserver::error);
             connection->sendMessage(response);
         }
@@ -166,7 +174,7 @@ MatrixApplication::handleRequest(std::shared_ptr<UniversalConnection> connection
             response->set_appid(appId);
             response->set_status(matrixserver::success);
             connection->sendMessage(response);
-            BOOST_LOG_TRIVIAL(debug)  << "app killed";
+            BOOST_LOG_TRIVIAL(debug) << "app killed";
             stop();
         }
             break;
@@ -228,6 +236,15 @@ void MatrixApplication::stop() {
 //    }
 //    BOOST_LOG_TRIVIAL(debug)  << "app stop successfull";
 //    exit(0);
+}
+
+int MatrixApplication::getBrightness() {
+    return serverConfig.globalscreenbrightness();
+}
+
+void MatrixApplication::setBrightness(int setBrightness) {
+    serverConfig.set_globalscreenbrightness(setBrightness);
+    updateBrightness = true;
 }
 
 long MatrixApplication::micros() {
