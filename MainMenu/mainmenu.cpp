@@ -37,6 +37,7 @@ MainMenu::MainMenu() : CubeApplication(40), joystickmngr(8) {
 
     gethostname(hostname, hostnameLen);
     menuState = applist;
+    setBrightness(getBrightness()); // fix for apply brightness stored in matrixserver config on startup
 }
 
 
