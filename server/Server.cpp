@@ -88,7 +88,7 @@ void Server::handleRequest(std::shared_ptr<UniversalConnection> connection, std:
                     auto usTotal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) - usStart;
                     if (message->has_serverconfig())
                         renderer->setGlobalBrightness(message->serverconfig().globalscreenbrightness());
-                    BOOST_LOG_TRIVIAL(debug) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
+                    //BOOST_LOG_TRIVIAL(debug) << "[Server] rendertime: " << usTotal.count() << " us"; // ~ 15ms
                 }
             } else {
                 //send app to pause
