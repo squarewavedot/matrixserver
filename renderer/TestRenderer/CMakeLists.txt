@@ -6,6 +6,7 @@ IF (OpenCV_FOUND)
 
     set(SOURCE_FILES
             TestRenderer.cpp
+            TestRenderer.h
             )
 
     add_library(testRenderer STATIC ${SOURCE_FILES})

@@ -3,7 +3,6 @@
 #include <vector>
 #include <Color.h>
 
-
 namespace Imlib2{
 #include <Imlib2.h>
 }

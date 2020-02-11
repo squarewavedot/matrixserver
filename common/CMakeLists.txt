@@ -19,7 +19,7 @@ set(SOURCE_FILES
 
 add_library(common STATIC ${SOURCE_FILES} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(common ${Protobuf_LIBRARIES})
-target_link_libraries(common ${Boost_LIBRARIES} rt)
+target_link_libraries(common ${Boost_LIBRARIES} $<$<PLATFORM_ID:Linux>:rt>)
 target_include_directories(common PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/matrixapplication>)
 target_include_directories(common PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:lib>)
 target_include_directories(common PUBLIC ${PROTOBUF_INCLUDE_DIRS})

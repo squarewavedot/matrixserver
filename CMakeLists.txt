@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(Boost_FIND_QUIETLY ON) #FINALLY!!!
 
+set(Boost_USE_MULTITHREADED TRUE) # fix warnings from newer boost versions
+
 if (EXISTS "/boot/LICENCE.broadcom") # I expect this file to be only found on an Raspian distribution
     set(BUILD_RASPBERRYPI true)
     message("Build on Raspberry Pi is enabled")
@@ -28,12 +30,12 @@ add_subdirectory(common)
 add_subdirectory(renderer)
 add_subdirectory(server)
 add_subdirectory(application)
-add_subdirectory(MainMenu)
-add_subdirectory(server_FPGA_RPISPI)
+#add_subdirectory(MainMenu)
+#add_subdirectory(server_FPGA_RPISPI)
 #add_subdirectory(server_testapp)
 #add_subdirectory(server_RGBMatrix)
 #add_subdirectory(server_FPGA)
-#add_subdirectory(server_simulator)
+add_subdirectory(server_simulator)
 #add_subdirectory(tests)
 
 

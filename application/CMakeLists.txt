@@ -6,17 +6,30 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-set(CMAKE_CXX_FLAGS "-fPIC")
+IF(APPLE)
+	# Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
+	# for sucessfull linking against lmlib2
+	LINK_DIRECTORIES(/usr/local/lib)
+ENDIF()
+
+#set(CMAKE_CXX_FLAGS "-fPIC -I/opt/X11/include")
 
 set(SOURCE_FILES
         CubeApplication.cpp
-        Mpu6050.cpp
-        Mpu6050.h ADS1000.cpp ADS1000.h
-        Image.cpp)
+#        Mpu6050.cpp
+#        Mpu6050.h ADS1000.cpp ADS1000.h
+         Image.cpp)
+
+
+
 
 add_library(matrixapplication SHARED ${SOURCE_FILES} MatrixApplication.cpp)
-target_link_libraries(matrixapplication common renderer FPGARenderer)
-target_link_libraries(matrixapplication ${Boost_LIBRARIES} rt wiringPi Imlib2)
+target_link_libraries(matrixapplication common renderer 
+	$<$<PLATFORM_ID:Linux>:FPGARenderer>)
+target_link_libraries(matrixapplication
+        ${Boost_LIBRARIES} Imlib2
+        $<$<PLATFORM_ID:Linux>:wiringPi> $<$<PLATFORM_ID:Linux>:rt> 
+         )
 target_include_directories(matrixapplication PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/matrixapplication>)
 target_include_directories(matrixapplication PUBLIC $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIRS}> $<INSTALL_INTERFACE:${EIGEN3_INCLUDE_DIRS}>)
 

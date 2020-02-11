@@ -14,8 +14,8 @@ bool Image::loadImage(std::string filepath) {
         height = Imlib2::imlib_image_get_height();
         imageData.resize(width * height, Color::black());
 
-        for (uint cols = 0; cols < width; cols++) {
-            for (uint rows = 0; rows < height; rows++) {
+        for (unsigned int cols = 0; cols < width; cols++) {
+            for (unsigned int rows = 0; rows < height; rows++) {
                 Imlib2::Imlib_Color tempColor;
                 Imlib2::imlib_image_query_pixel(cols, rows, &tempColor);
                 imageData[rows + cols * height] = Color(tempColor.red,tempColor.green,tempColor.blue);
