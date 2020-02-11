@@ -14,39 +14,35 @@ ENDIF()
 
 #set(CMAKE_CXX_FLAGS "-fPIC -I/opt/X11/include")
 
+
 set(SOURCE_FILES
         CubeApplication.cpp
-#        Mpu6050.cpp
-#        Mpu6050.h ADS1000.cpp ADS1000.h
-         Image.cpp)
+        Image.cpp)
 
-
+if (BUILD_RASPBERRYPI)
+	set(SOURCE_FILES
+        	Mpu6050.cpp
+        	Mpu6050.h ADS1000.cpp ADS1000.h)
+endif ()
 
 
 add_library(matrixapplication SHARED ${SOURCE_FILES} MatrixApplication.cpp)
+
 target_link_libraries(matrixapplication common renderer 
 	$<$<PLATFORM_ID:Linux>:FPGARenderer>)
 target_link_libraries(matrixapplication
         ${Boost_LIBRARIES} Imlib2
-        $<$<PLATFORM_ID:Linux>:wiringPi> $<$<PLATFORM_ID:Linux>:rt> 
+        $<$<PLATFORM_ID:Linux>:rt>
          )
+if (BUILD_RASPBERRYPI)
+	target_link_libraries(matrixapplication wiringPi)
+endif ()
+
 target_include_directories(matrixapplication PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/matrixapplication>)
 target_include_directories(matrixapplication PUBLIC $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIRS}> $<INSTALL_INTERFACE:${EIGEN3_INCLUDE_DIRS}>)
 
 target_compile_definitions(matrixapplication PUBLIC BOOST_LOG_DYN_LINK)
 set_target_properties(matrixapplication PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplication.h")
-
-#
-#add_library(matrixapplicationstandalone SHARED ${SOURCE_FILES} MatrixApplicationStandalone.cpp)
-#target_link_libraries(matrixapplicationstandalone common renderer FPGARenderer)
-#target_link_libraries(matrixapplicationstandalone ${Boost_LIBRARIES} rt wiringPi Imlib2)
-#target_include_directories(matrixapplicationstandalone PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIRS})
-#
-#target_compile_definitions(matrixapplicationstandalone PUBLIC BOOST_LOG_DYN_LINK)
-#target_compile_definitions(matrixapplicationstandalone PUBLIC MATRIXAPPLICATION_STANDALONE)
-#
-
-#set_target_properties(matrixapplicationstandalone PROPERTIES PUBLIC_HEADER "CubeApplication.h;Font6px.h;Mpu6050.h;ADS1000.h;Image.h;MatrixApplicationStandalone.h")
 
 install(TARGETS matrixapplication
         EXPORT matrixapplication-targets
@@ -58,12 +54,3 @@ install(TARGETS matrixapplication
         COMPONENT matrixapplication
         )
 
-#install(TARGETS matrixapplicationstandalone
-#        EXPORT matrixapplicationstandalone-targets
-#        LIBRARY
-#        DESTINATION lib
-#        COMPONENT matrixapplicationstandalone
-#        PUBLIC_HEADER
-#        DESTINATION include
-#        COMPONENT matrixapplicationstandalone
-#        )
